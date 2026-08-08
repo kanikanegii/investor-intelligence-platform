@@ -53,3 +53,12 @@ dist/
 # Sensitive files
 secrets.json
 credentials.json
+
+# Evaluation reports (generated, not checked in)
+evaluation/reports/*
+!evaluation/reports/.gitkeep
+
+# Docs: keep only README.md and CICD_Deployment_Guide.md at repo root
+/*.md
+!/README.md
+!/CICD_Deployment_Guide.md
