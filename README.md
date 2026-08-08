@@ -1,6 +1,6 @@
 # AI-Powered Investor Intelligence Platform
 
-<img width="1606" height="945" alt="AI-Powered Investor Intelligence Platform dashboard" src="docs/dashboard-screenshot.png" />
+<img width="2560" height="1638" alt="AI-Powered Investor Intelligence Platform dashboard" src="docs/dashboard-screenshot.png" />
 
 This repository contains the Python backend for an AI-powered Investor Intelligence Platform, including document ingestion, semantic search, KPI extraction, Azure AI Search integration, Azure OpenAI integration, and PostgreSQL-based KPI storage.
 

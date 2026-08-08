@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI-Powered Investor Intelligence Platform</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3/lib/msal-browser.min.js"></script>
 </head>
 <body>
 
@@ -18,6 +19,12 @@
                 </svg>
             </div>
             <span class="logo-text">Investor Intelligence</span>
+        </div>
+
+        <!-- Sign-in status -->
+        <div class="uploader-card" id="authCard" style="cursor: pointer; text-align: center;" onclick="handleSignInClick()">
+            <div class="uploader-title" id="authStatusText">Sign in required</div>
+            <div class="uploader-desc" id="authStatusSub">Click to sign in with Microsoft</div>
         </div>
 
         <!-- Ingestion Upload Card -->
@@ -428,6 +435,102 @@
     };
 </script>
 
+<!-- MSAL.js authentication -->
+<script>
+    const msalConfig = {
+        auth: {
+            clientId: "{{ azure_client_id }}",
+            authority: "https://login.microsoftonline.com/{{ azure_tenant_id }}",
+            redirectUri: window.location.origin,
+        },
+        cache: {
+            cacheLocation: "sessionStorage",
+        },
+    };
+
+    // Requests the app's own exposed API scope so the resulting token's
+    // audience matches what routes/*.py's require_role() expects (aud ==
+    // api://<client-id>). Must be defined under "Expose an API" on the app
+    // registration, with this SPA's redirect URI granted access to it.
+    const API_SCOPES = ["api://{{ azure_client_id }}/access_as_user"];
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+    let msalInitialized = false;
+
+    async function initMsal() {
+        await msalInstance.initialize();
+        msalInitialized = true;
+
+        const response = await msalInstance.handleRedirectPromise().catch((err) => {
+            console.error("MSAL redirect handling failed:", err);
+            return null;
+        });
+
+        const account = response?.account || msalInstance.getAllAccounts()[0];
+        if (account) {
+            msalInstance.setActiveAccount(account);
+        }
+        updateAuthUI();
+    }
+
+    function updateAuthUI() {
+        const account = msalInstance.getActiveAccount();
+        const statusText = document.getElementById('authStatusText');
+        const statusSub = document.getElementById('authStatusSub');
+        if (account) {
+            statusText.textContent = account.name || account.username;
+            statusSub.textContent = 'Signed in — click to sign out';
+        } else {
+            statusText.textContent = 'Sign in required';
+            statusSub.textContent = 'Click to sign in with Microsoft';
+        }
+    }
+
+    async function handleSignInClick() {
+        if (!msalInitialized) return;
+        const account = msalInstance.getActiveAccount();
+        if (account) {
+            await msalInstance.logoutPopup();
+            updateAuthUI();
+            return;
+        }
+        try {
+            const result = await msalInstance.loginPopup({ scopes: API_SCOPES });
+            msalInstance.setActiveAccount(result.account);
+            updateAuthUI();
+        } catch (err) {
+            console.error("Sign-in failed:", err);
+            showToast('Sign-in Failed', err.message || 'Could not sign in with Microsoft.', 'error');
+        }
+    }
+
+    // Returns a valid access token for the API, silently refreshing via the
+    // cached session where possible and only falling back to an interactive
+    // popup when silent acquisition fails (e.g. no cached session yet).
+    async function getAccessToken() {
+        const account = msalInstance.getActiveAccount();
+        if (!account) {
+            await handleSignInClick();
+            const retryAccount = msalInstance.getActiveAccount();
+            if (!retryAccount) throw new Error("Sign-in required.");
+        }
+
+        try {
+            const result = await msalInstance.acquireTokenSilent({
+                scopes: API_SCOPES,
+                account: msalInstance.getActiveAccount(),
+            });
+            return result.accessToken;
+        } catch (err) {
+            const result = await msalInstance.acquireTokenPopup({ scopes: API_SCOPES });
+            msalInstance.setActiveAccount(result.account);
+            return result.accessToken;
+        }
+    }
+
+    initMsal();
+</script>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     // ----------------------------------------------------
@@ -534,9 +637,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function handleUpload(file) {
+    async function handleUpload(file) {
         if (!file.name.toLowerCase().endsWith('.pdf')) {
             showToast('Invalid File Type', 'Please upload a PDF financial report.', 'error');
+            return;
+        }
+
+        let token;
+        try {
+            token = await getAccessToken();
+        } catch (err) {
+            showToast('Sign-in Required', 'Please sign in with Microsoft before uploading.', 'error');
             return;
         }
 
@@ -550,6 +661,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/api/upload', true);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
         xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
@@ -719,6 +831,15 @@ async function sendMessage() {
     const typingId = showTypingIndicator();
 
     try {
+        let token;
+        try {
+            token = await getAccessToken();
+        } catch (err) {
+            removeTypingIndicator(typingId);
+            appendMessage('bot', 'Please sign in with Microsoft to use the chat.');
+            return;
+        }
+
         const payload = {
             question: question
         };
@@ -731,7 +852,10 @@ async function sendMessage() {
 
         const response = await fetch('/api/chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
             body: JSON.stringify(payload)
         });
 

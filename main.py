@@ -93,7 +93,9 @@ def dashboard(request: Request):
         context={
             "metrics": metrics,
             "total_companies": len(metrics),
-            "total_reports": len(metrics)
+            "total_reports": len(metrics),
+            "azure_client_id": os.environ["AZURE_CLIENT_ID"],
+            "azure_tenant_id": os.environ["AZURE_TENANT_ID"],
         }
     )
 

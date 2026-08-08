@@ -80,6 +80,8 @@ Smaller reporting company
 
 o 
 
+
+
 **TESLA, INC.** 
 
 ## **ANNUAL REPORT ON FORM 10-K FOR THE YEAR ENDED DECEMBER 31, 2024** 
@@ -89,6 +91,8 @@ o
 |**PART I.**<br>Item 1.<br>Business<br>Item 1A.<br>Risk Factors<br>Item 1B.<br>Unresolved Staff Comments<br>Item 1C.<br>Cybersecurity<br>Item 2.<br>Properties<br>Item 3.<br>Legal Proceedings<br>Item 4.<br>Mine Safety Disclosures<br>**PART II.**<br>Item 5.<br>Market for Registrant's Common Equity, Related Stockholder Matters and Issuer Purchases of Equity Securities<br>Item 6.<br>[Reserved]<br>Item 7.<br>Management's Discussion and Analysis of Financial Condition and Results of Operations<br>Item 7A.<br>Quantitative and Qualitative Disclosures about Market Risk<br>Item 8.<br>Financial Statements and Supplementary Data<br>Item 9.<br>Changes in and Disagreements with Accountants on Accounting and Financial Disclosure<br>Item 9A.<br>Controls and Procedures<br>Item 9B.<br>Other Information<br>Item 9C.<br>Disclosure Regarding Foreign Jurisdictions that Prevent Inspections<br>**PART III.**<br>Item 10.<br>Directors, Executive Officers and Corporate Governance<br>Item 11.<br>Executive Compensation<br>Item 12.<br>Security Ownership of Certain Beneficial Owners and Management and Related Stockholder Matters<br>Item 13.<br>Certain Relationships and Related Transactions, and Director Independence<br>Item 14.<br>Principal Accountant Fees and Services<br>**PART IV.**<br>Item 15.<br>Exhibits and Financial Statement Schedules<br>Item 16.<br>Form<br>10-K<br>Summary<br>Signatures|**Page**|
 |---|---|
 ||2<br>13<br>27<br>28<br>29<br>29<br>29<br>30<br>31<br>32<br>44<br>45<br>91<br>91<br>92<br>92<br>93<br>93<br>93<br>93<br>93<br>94<br>107|
+
+
 
 
 
@@ -119,6 +123,8 @@ These plans are subject to uncertainties inherent in establishing and ramping ma
 Our cost reduction efforts, cost innovation strategies, and additional localized procurement and manufacturing are key to our vehicles’ affordability and have allowed us to competitively price our vehicles. We will also continue to generate demand by improving our vehicles’ performance and functionality, including through product offerings and features based on artificial intelligence such as Autopilot, FSD (Supervised), and other software, and delivering new vehicles and vehicle options, such as our launch of the updated Model 3 in 2024, and the New Model Y in the first quarter of 2025. In addition, we have been increasing awareness, and expanding our vehicle financing programs, including attractive leasing terms for our customers. 
 
 33 
+
+
 
 Furthermore, significant judgment is required in evaluating our tax positions. In the ordinary course of business, there are many transactions and calculations for which the ultimate tax settlement is uncertain. As a result, we recognize the effect of this uncertainty on our tax attributes or taxes payable based on our estimates of the eventual outcome. These effects are recognized when, despite our belief that our tax return positions are supportable, we believe that it is more likely than not that some of those positions may not be fully sustained upon review by tax authorities. We are required to file income tax returns in the U.S. and various foreign jurisdictions, which requires us to interpret the applicable tax laws and regulations in effect in such jurisdictions. Such returns are subject to audit by the various federal, state and foreign taxing authorities, who may disagree with respect to our tax positions. We believe that our consideration is adequate for all open audit years based on our assessment of many factors, including past experience and interpretations of tax law. We review and update our estimates in light of changing facts and circumstances, such as the closing of a tax audit, the lapse of a statute of limitations or a change in estimate. To the extent that the final tax outcome of these matters differs from our expectations, such differences may impact income tax expense in the period in which such determination is made. 
 
@@ -155,6 +161,8 @@ Services and other revenue consists of sales of used vehicles, non-warranty main
 Automotive sales revenue decreased $6.03 billion, or 8%, in the year ended December 31, 2024 as compared to the year ended December 31, 2023, primarily due to lower average selling price on our vehicles driven by overall price reductions and attractive financing options provided in 2024 as well as mix. Additionally, there was a decrease of approximately 22,000 combined Model 3 and Model Y cash deliveries. The decreases were partially offset by an increase of approximately 19,000 deliveries of other models primarily due to our production ramp of Cybertruck. Additionally, we recognized $596 million of FSD (Supervised) revenue due to release of certain features in 2024. 
 
 37 
+
+
 
 Automotive regulatory credits revenue increased $973 million, or 54%, in the year ended December 31, 2024 as compared to the year ended December 31, 2023, driven by demand for credits in North America as other automobile manufacturers scale back on their battery electric vehicle plans. 
 
@@ -199,6 +207,8 @@ Energy generation and storage revenue increased $4.05 billion, or 67%, in the ye
 
 
 38 
+
+
 
 Gross margin for energy generation and storage increased from 18.9% to 26.2% in the year ended December 31, 2024 as compared to the year ended December 31, 2023, primarily due to margin improvements for our energy storage products driven by cost reductions, including benefits from IRA manufacturing credits, and a higher proportion of our storage business, which operated at a higher gross margin, within the segment as compared to the prior periods. 
 
@@ -254,6 +264,8 @@ Interest income increased $503 million, or 47%, in the year ended December 31, 2
 
 40 
 
+
+
 ## **Other Income (Expense), Net** 
 
 |(Dollars in millions)|**Year**|**Ended Decembe**|**Ended Decembe**|**r 31,**|**r 31,**|**2024 vs.**|**2024 vs.**|**2023 Change**|**2023 vs**|**2023 vs**|**. 2022 Change**|
@@ -291,6 +303,8 @@ In addition, because a large portion of our future expenditures will be to fund 
 
 41 
 
+
+
 Accordingly, we believe that our current sources of funds will provide us with adequate liquidity during the 12-month period following December 31, 2024, as well as in the long-term. 
 
 See the sections below for more details regarding the material requirements for cash in our business and our sources of liquidity to meet such needs. 
@@ -327,6 +341,8 @@ We continue adapting our strategy to meet our liquidity and risk objectives, suc
 Our cash flows from operating activities are significantly affected by our cash investments to support the growth of our business in areas such as research and development and selling, general and administrative and working capital. Our operating cash inflows include cash from vehicle sales and related servicing, customer lease and financing payments, customer deposits, cash from sales of regulatory credits and energy generation and storage products, and interest income on our cash and investments portfolio. These cash inflows are offset by our payments to suppliers for production materials and parts used in our manufacturing process, operating expenses, operating lease payments and interest payments on our financings. 
 
 42 
+
+
 
 ## **Tesla, Inc.** 
 
@@ -384,6 +400,8 @@ The accompanying notes are an integral part of these consolidated financial stat
 
 48 
 
+
+
 ## **Tesla, Inc.** 
 
 ## **Consolidated Statements of Operations (in millions, except per share data)** 
@@ -435,6 +453,8 @@ The accompanying notes are an integral part of these consolidated financial stat
 
 49 
 
+
+
 ## **Tesla, Inc.** 
 
 ## **Consolidated Statements of Comprehensive Income (in millions)** 
@@ -456,6 +476,8 @@ The accompanying notes are an integral part of these consolidated financial stat
 The accompanying notes are an integral part of these consolidated financial statements. 
 
 50 
+
+
 
 ## **Tesla, Inc.** 
 
@@ -495,6 +517,8 @@ The accompanying notes are an integral part of these consolidated financial stat
 The accompanying notes are an integral part of these consolidated financial statements. 
 
 51 
+
+
 
 ## **Tesla, Inc.** 
 
@@ -557,6 +581,8 @@ The accompanying notes are an integral part of these consolidated financial stat
 
 52 
 
+
+
 ## Revenue Recognition 
 
 ## Revenue by source 
@@ -589,6 +615,8 @@ We offer resale value guarantees to our commercial banking partners in connectio
 
 54 
 
+
+
 We receive upfront payment for the vehicle, do not bear casualty and credit risks during the lease term, and we provide a guarantee capped to a limit if they are unable to sell the vehicle at or above the vehicle’s contractual or determined residual value at the end of the lease term. We estimate a guarantee liability in accordance with ASC 460, Guarantees and record it within other liabilities on our consolidated balance sheet. On a quarterly basis, we assess the estimated market value of vehicles sold under these programs to determine whether there have been changes to the amount of expected resale value guarantee liabilities. As we accumulate more data related to the resale values of our vehicles or as market conditions change, there may be material changes to their estimated values. The total recorded guarantee liabilities on vehicles sold under these programs were immaterial as of December 31, 2024 and 2023. Our maximum exposure on the guarantees we provide if they are unable to sell the vehicle at or above the vehicle’s contractual residual value at the end of the lease term was $1.45 billion and $166 million as of December 31, 2024 and 2023, respectively. 
 
 Deferred revenue related to the access to our FSD (Supervised) features and their ongoing maintenance, internet connectivity, free Supercharging programs and over-the-air software updates primarily on automotive sales consisted of the following (in millions): 
@@ -615,6 +643,8 @@ We earn tradable credits in the operation of our automotive business under vario
 Payments for automotive regulatory credits are typically received at the point control transfers to the customer, or in accordance with payment terms customary to the business. We recognize revenue on the sale of automotive regulatory credits, which have negligible incremental costs associated with them, at the time control of the regulatory credits is transferred to the purchasing party. Deferred revenue related to sales of automotive regulatory credits was immaterial as of December 31, 2024 and 2023. Revenue recognized from the deferred revenue balance as of December 31, 2023 and 2022 was immaterial for the years ended December 31, 2024 and 2023. During the year ended December 31, 2022, we had also recognized $288 million in revenue due to changes in regulation which entitled us to additional consideration for credits sold previously. We have elected the practical expedient to omit disclosure of the amount of the transaction price allocated to remaining performance obligations for contracts with an original expected contract length of one year or less. As of December 31, 2024, total transaction price allocated to performance obligations that were unsatisfied or partially unsatisfied for contracts with an original expected length of more than one year was $4.68 billion. Of this amount, we expect to recognize $863 million in the next 12 months and the rest over the remaining performance obligation period. Additionally, changes in regulations on automotive regulatory credits may significantly impact our remaining performance obligations and revenue to be recognized under these contracts. 
 
 55 
+
+
 
 We capitalize initial direct costs from the execution of agreements for solar energy systems and PPAs, which include the referral fees and sales commissions, as an element of solar energy systems, net, and subsequently amortize these costs over the term of the related agreements. 
 
@@ -650,6 +680,8 @@ We are subject to income taxes in the U.S. and in many foreign jurisdictions. In
 
 58 
 
+
+
 ## Noncontrolling Interests and Redeemable Noncontrolling Interests 
 
 Noncontrolling interests and redeemable noncontrolling interests represent third-party interests in the net assets under certain funding arrangements, or funds, that we have entered into to finance the costs of solar energy systems and vehicles under operating leases. We have determined that the contractual provisions of the funds represent substantive profit-sharing arrangements. We have further determined that the methodology for calculating the noncontrolling interest and redeemable noncontrolling interest balances that reflects the substantive profit-sharing arrangements is a balance sheet approach using the hypothetical liquidation at book value (“HLBV”) method. We, therefore, determine the amount of the noncontrolling interests and redeemable noncontrolling interests in the net assets of the funds at each balance sheet date using the HLBV method, which is presented on the consolidated balance sheet as noncontrolling interests in subsidiaries and redeemable noncontrolling interests in subsidiaries. Under the HLBV method, the amounts reported as noncontrolling interests and redeemable noncontrolling interests in the consolidated balance sheet represent the amounts the third parties would hypothetically receive at each balance sheet date under the liquidation provisions of the funds, assuming the net assets of the funds were liquidated at their recorded amounts determined in accordance with GAAP and with tax laws effective at the balance sheet date and distributed to the third parties. The third parties’ interests in the results of operations of the funds are determined as the difference in the noncontrolling interest and redeemable noncontrolling interest balances in the consolidated balance sheets between the start and end of each reporting period, after taking into account any capital transactions between the funds and the third parties. However, the redeemable noncontrolling interest balance is at least equal to the redemption amount. The redeemable noncontrolling interest balance is presented as temporary equity in the mezzanine section of the consolidated balance sheet since these third parties have the right to redeem their interests in the funds for cash or other assets. 
@@ -672,6 +704,8 @@ The following table presents the reconciliation of net income attributable to co
 
 
 60 
+
+
 
 The following table presents the reconciliation of basic to diluted weighted average shares used in computing net income per share of common stock attributable to common stockholders (in millions): 
 
@@ -721,6 +755,8 @@ Our investments are all designated as available-for-sale and reported at estimat
 
 61 
 
+
+
 For periods prior to January 1, 2024, impairment losses were recognized within Restructuring and other in the consolidated statements of operations in the period in which the impairment was identified. Also for periods prior to January 1, 2024, gains were not recorded until realized upon sale(s), at which point they were presented net of any impairment losses for the same digital assets held within Restructuring and other. In determining the gain to be recognized upon sale, we calculate the difference between the sales price and carrying value of the digital assets sold immediately prior to sale. 
 
 See Note 3, Digital Assets, Net, for further information regarding digital assets. 
@@ -758,6 +794,8 @@ We assess goodwill for impairment annually in the fourth quarter, or more freque
 
 64 
 
+
+
 ## Capitalization of Software Costs 
 
 We capitalize costs incurred in the development of internal use software, during the application development stage to Property, plant and equipment, net on the consolidated balance sheets. Costs related to preliminary project activities and post-implementation activities are expensed as incurred. Such costs are amortized on a straight-line basis over their estimated useful life of three to five years. 
@@ -788,6 +826,8 @@ We provide a manufacturer’s warranty on all new and used vehicles and a warran
 
 
 65 
+
+
 
 ## ASU 2023-08 
 
@@ -829,6 +869,8 @@ The following table provides details of the activities related to our digital as
 The following tables present summarized unaudited quarterly financial statement data for those impacted line items based on the Company’s adoption of the new crypto assets standard as described in Note 2, Summary of Significant Accounting Policies (in millions, except per share data): 
 
 68 
+
+
 
 |**Consolidated Balance Sheets (unaudited):**||**As of:**||
 |---|---|---|---|
@@ -877,6 +919,8 @@ Goodwill decreased $9 million within the automotive segment from $253 million as
 
 69 
 
+
+
 The net carrying value of our intangible assets decreased from $178 million as of December 31, 2023 to $150 million as of December 31, 2024 mainly from amortization. 
 
 ## **Note 5 – Fair Value of Financial Instruments** 
@@ -914,6 +958,8 @@ Our cash, cash equivalents and investments classified by security type as of Dec
 
 
 70 
+
+
 
 ||||||**December**|**December**|**31, 2023**|**31, 2023**||||
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -953,6 +999,8 @@ Our inventory consisted of the following (in millions):
 We write-down inventory for any excess or obsolete inventory or when we believe that the net realizable value of inventory is less than the carrying value. During the years ended December 31, 2024, 2023 and 2022, we recorded write-downs of $190 million, $233 million and $144 million, respectively, in Cost of revenues in the consolidated statements of operations. 
 
 71 
+
+
 
 ## **Note 7 – Property, Plant and Equipment, Net** 
 
@@ -1000,6 +1048,8 @@ Our accrued liabilities and other current liabilities consisted of the following
 (2) Taxes payable primarily includes value added tax, income tax, sales tax, property tax and use tax payables. 
 
 72 
+
+
 
 ## **Note 9 – Other Long-Term Liabilities** 
 
@@ -1064,6 +1114,8 @@ The following is a summary of our debt and finance leases as of December 31, 202
 
 73 
 
+
+
 ## **China Working Capital Facility** 
 
 In April 2024, one of our subsidiaries entered into a loan agreement (the “China Working Capital Facility”) with lenders in China for an unsecured revolving facility of up to RMB 20.00 billion to be used for certain production expenditures as well as repayment of certain finance facilities. Borrowed funds bear interest at a rate equal to the Loan Prime Rate published by the People’s Bank of China minus 1.18%. The China Working Capital Facility is non-recourse to our assets. 
@@ -1099,6 +1151,8 @@ We have elected not to present short-term leases on the consolidated balance she
 Our leases, where we are the lessee, often include options to extend the lease term for up to 10 years. Some of our leases also include options to terminate the lease prior to the end of the agreed upon lease term. For purposes of calculating lease liabilities, lease terms include options to extend or terminate the lease when it is reasonably certain that we will exercise such options. 
 
 75 
+
+
 
 Lease expense for operating leases is recognized on a straight-line basis over the lease term as cost of revenues or operating expenses depending on the nature of the leased asset. Certain operating leases provide for annual increases to lease payments based on an index or rate. We calculate the present value of future lease payments based on the index or rate at the lease commencement date for new leases. Differences between the calculated lease payment and actual payment are expensed as incurred. Amortization of finance lease assets is recognized over the lease term as cost of revenues or operating expenses depending on the nature of the leased asset. Interest expense on finance lease liabilities is recognized over the lease term within Interest expense in the consolidated statements of operations. 
 
@@ -1144,6 +1198,8 @@ The components of lease expense are as follows (in millions) within our consolid
 (1) Includes short-term leases and variable lease costs, which are immaterial. 
 
 76 
+
+
 
 Other information related to leases where we are the lessee is as follows: 
 
@@ -1194,6 +1250,8 @@ As of December 31, 2024, we have excluded from the table above additional operat
 
 77 
 
+
+
 ## **Operating Lease and Sales-type Lease Receivables** 
 
 We are the lessor of certain vehicle and solar energy system arrangements as described in Note 2, Summary of Significant Accounting Policies. As of December 31, 2024, maturities of our operating lease and sales-type lease receivables from customers for each of the next five years and thereafter were as follows (in millions): 
@@ -1238,6 +1296,8 @@ As of December 31, 2024, 113.0 million shares were reserved and available for is
 
 78 
 
+
+
 The following table summarizes our stock option and RSU activity for the year ended December 31, 2024: 
 
 |||**Stock Options**|**Stock Options**|||**RS**|**Us**|
@@ -1280,6 +1340,8 @@ The fair value of RSUs with service or service and performance conditions is mea
 
 79 
 
+
+
 ## **Other Performance-Based Grants** 
 
 From time to time, the Compensation Committee of our Board of Directors grants certain employees performance-based RSUs and stock options. 
@@ -1321,6 +1383,8 @@ Our income before provision for (benefit from) income taxes for the years ended 
 
 80 
 
+
+
 A provision for (benefit from) income taxes of $1.84 billion, $(5.00) billion and $1.13 billion has been recognized for the years ended December 31, 2024, 2023 and 2022, respectively. The components of the provision for (benefit from) income taxes for the years ended December 31, 2024, 2023 and 2022 consisted of the following (in millions): 
 
 ||**Y**|**Y**|**ear Ended December 31,**|**ear Ended December 31,**|**ear Ended December 31,**|
@@ -1341,6 +1405,8 @@ A provision for (benefit from) income taxes of $1.84 billion, $(5.00) billion an
 
 
 81 
+
+
 
 The reconciliation of taxes at the federal statutory rate to our provision for (benefit from) income taxes for the years ended December 31, 2024, 2023 and 2022 was as follows (in millions): 
 
@@ -1389,6 +1455,8 @@ Deferred tax assets (liabilities) as of December 31, 2024 and 2023 consisted of 
 
 82 
 
+
+
 As of December 31, 2024, we maintained valuation allowances of $1.22 billion for deferred tax assets that are not more likely than not to be realized, which primarily included our California deferred tax assets, U.S. foreign tax credits and certain foreign operating losses. The valuation allowance on our net deferred tax assets increased by $332 million during the year ended December 31, 2024, and decreased by $6.46 billion and $1.73 billion during the years ended December 31, 2023 and 2022, respectively. The valuation allowance increase during the year ended December 31, 2024 was primarily due to the changes of our California deferred tax assets, U.S. foreign tax credits and certain foreign operating losses. The change in valuation allowance during the year ended December 31, 2023 was primarily due to the release of our valuation allowance with respect to our U.S. federal and certain state deferred tax assets. In the fourth quarter of 2023, based on the relevant weight of positive and negative evidence, including the amount of our taxable income in recent years which was objective and verifiable, and consideration of our expected future taxable earnings, we concluded that it is more likely than not that most of our U.S. federal and certain state deferred tax assets are realizable and released the valuation allowance on these deferred tax assets. The valuation allowance change during the years ended December 31, 2022 was primarily due to changes in our U.S. deferred tax assets and liabilities. Our deferred tax assets without a valuation allowance are more likely than not to be realized given the expectation of future earnings in the respective jurisdictions. 
 
 As of December 31, 2024, we had $4.34 billion of federal and $8.59 billion of state net operating loss carry-forwards available to offset future taxable income, an immaterial amount of which, if not utilized, will begin to expire in 2026 for federal and 2025 for state purposes. Federal and state laws can impose substantial restrictions on the utilization of net operating loss and tax credit carry-forwards in the event of an “ownership change,” as defined in Section 382 of the Internal Revenue Code. We have determined that no significant limitation would be placed on the utilization of our net operating loss and tax credit carry-forwards due to prior ownership changes or expirations. 
@@ -1424,6 +1492,8 @@ The changes to our gross unrecognized tax benefits were as follows (in millions)
 
 83 
 
+
+
 The aggregate carrying values of the VIEs’ assets and liabilities, after elimination of any intercompany transactions and balances, in the consolidated balance sheets were as follows (in millions): 
 
 ||**December 31,**<br>**2024**|**December 31,**<br>**2024**|**December 31,**<br>**2024**|**December 31,**<br>**2023**|**December 31,**<br>**2023**|
@@ -1455,6 +1525,8 @@ The aggregate carrying values of the VIEs’ assets and liabilities, after elimi
 Tesla periodically does business with certain entities with which its CEO and directors are affiliated, such as x.AI, SpaceX, The Boring Company, X Corp. and Redwood Materials, in accordance with our Related Person Transactions Policy. Such transactions have not had to date, and are not currently expected to have, a material impact on our consolidated financial statements. 
 
 89 
+
+
 
 ## **Note 17 – Segment Reporting and Information about Geographic Areas** 
 
@@ -1505,6 +1577,8 @@ The following table presents long-lived assets by geographic area (in millions):
 
 90 
 
+
+
 The following table presents inventory by reportable segment (in millions): 
 
 ||**December 31,**<br>**2024**|**December 31,**<br>**2024**|**December 31,**<br>**2023**|
@@ -1539,6 +1613,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 91 
 
+
+
 **PART IV** 
 
 ## **ITEM 15. EXHIBITS AND FINANCIAL STATEMENT SCHEDULES** 
@@ -1560,6 +1636,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 94 
 
+
+
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
 |||**Form**|**File No.**|**Exhibit**|**Filing Date**||
@@ -1568,6 +1646,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 
 95 
+
+
 
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
@@ -1578,6 +1658,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 96 
 
+
+
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
 |||**Form**|**File No.**|**Exhibit**|**Filing Date**||
@@ -1586,6 +1668,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 
 97 
+
+
 
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
@@ -1596,6 +1680,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 98 
 
+
+
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
 |||**Form**|**File No.**|**Exhibit**|**Filing Date**||
@@ -1604,6 +1690,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 
 99 
+
+
 
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
@@ -1614,6 +1702,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 100 
 
+
+
 |**Exhibit**<br>**Number**|**Exhibit Description**<br>One Hundred-and-Sixty-Third Supplemental<br>Indenture, dated as of December 14, 2015, by and<br>between SolarCity and the Trustee, related to<br>SolarCity’s 4.70% Solar Bonds, Series 2015/C131-<br>10.<br>One Hundred-and-Sixty-Fourth Supplemental<br>Indenture, dated as of December 14, 2015, by and<br>between SolarCity and the Trustee, related to<br>SolarCity’s 5.45% Solar Bonds, Series 2015/C132-<br>15.<br>One Hundred-and-Sixty-Eighth Supplemental<br>Indenture, dated as of December 28, 2015, by and<br>between SolarCity and the Trustee, related to<br>SolarCity’s 4.70% Solar Bonds, Series 2015/C136-<br>10.<br>One Hundred-and-Sixty-Ninth Supplemental<br>Indenture, dated as of December 28, 2015, by and<br>between SolarCity and the Trustee, related to<br>SolarCity’s 5.45% Solar Bonds, Series 2015/C137-<br>15.<br>One Hundred-and-Seventy-Third Supplemental<br>Indenture, dated as of January 29, 2016, by and<br>between SolarCity and the Trustee, related to<br>SolarCity’s 5.00% Solar Bonds, Series 2016/4-10.<br>One Hundred-and-Seventy-Fourth Supplemental<br>Indenture, dated as of January 29, 2016, by and<br>between SolarCity and the Trustee, related to<br>SolarCity’s 5.75% Solar Bonds, Series 2016/5-15.<br>Description of Registrant’s Securities<br>Form of Indemnification Agreement between the<br>Registrant and its directors and officers.<br>2003 Equity Incentive Plan.<br>Form of Stock Option Agreement under 2003<br>Equity Incentive Plan.<br>Amended and Restated 2010 Equity Incentive<br>Plan.<br>Form of Stock Option Agreement under 2010<br>Equity Incentive Plan.<br>Form of Restricted Stock Unit Award Agreement<br>under 2010 Equity Incentive Plan.||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
 |||**Form**|**File No.**|**Exhibit**|**Filing Date**||
@@ -1622,6 +1712,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 
 101 
+
+
 
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
@@ -1632,6 +1724,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 102 
 
+
+
 |**Exhibit**<br>**Number**|**Exhibit Description**<br>Investment Letter Agreement between Panasonic<br>Corporation and the Registrant dated October 1,<br>2014.<br>Amendment to Gigafactory Documents, dated<br>April 5, 2016, by and among the Registrant,<br>Panasonic Corporation, Panasonic Corporation of<br>North America and Panasonic Energy Corporation<br>of North America.<br>2019 Pricing Agreement (Japan Cells) with respect<br>to 2011 Supply Agreement, executed September<br>20, 2019, by and among the Registrant, Tesla<br>Motors Netherlands B.V., Panasonic Corporation<br>and SANYO Electric Co., Ltd.<br>2020 Pricing Agreement (Gigafactory 2170 Cells),<br>entered into on June 9, 2020, by and among<br>Registrant, Tesla Motors Netherlands B.V.,<br>Panasonic Corporation and Panasonic Corporation<br>of North America<br>.<br>2021 Pricing Agreement (Japan Cells) with respect<br>to 2011 Supply Agreement, executed December<br>29, 2020, by and among the Registrant, Tesla<br>Motors Netherlands B.V., Panasonic Corporation of<br>North America and SANYO Electric Co., Ltd.<br>Amended and Restated Factory Lease, executed<br>as of March 26, 2019, by and between the<br>Registrant and Panasonic Energy North America, a<br>division of Panasonic Corporation of North<br>America, as tenant.<br>Lease Amendment, executed September 20,<br>2019, by and among the Registrant, Panasonic<br>Corporation of North America, on behalf of its<br>division Panasonic Energy of North America, with<br>respect to the Amended and Restated Factory<br>Lease, executed as of March 26, 2019.<br>Second Lease Amendment, entered into on June<br>9, 2020, by and between the Registrant and<br>Panasonic Energy of North America, a division of<br>Panasonic Corporation of North America, with<br>respect to the Amended and Restated Factory<br>Lease dated January 1, 2017<br>.<br>Agreement for Tax Abatement and Incentives,<br>dated as of May 7, 2015, by and between Tesla<br>Motors, Inc. and the State of Nevada, acting by<br>and through the Nevada Governor’s Office of<br>Economic Development.||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
 |||**Form**|**File No.**|**Exhibit**|**Filing Date**||
@@ -1640,6 +1734,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 
 103 
+
+
 
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
@@ -1650,6 +1746,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 104 
 
+
+
 |**Exhibit**<br>**Number**|**Exhibit Description**<br>Sixth Amendment to Amended and Restated<br>Agreement For Research & Development Alliance<br>on Triex Module Technology, effective as of<br>September 1, 2015, by and between The<br>Research Foundation For The State University of<br>New York, on behalf of the College of Nanoscale<br>Science and Engineering of the State University of<br>New York, and Silevo, LLC.<br>Seventh Amendment to Amended and Restated<br>Agreement For Research & Development Alliance<br>on Triex Module Technology, effective as of<br>October 9, 2015, by and between The Research<br>Foundation For The State University of New York,<br>on behalf of the College of Nanoscale Science and<br>Engineering of the State University of New York,<br>and Silevo, LLC<br>.<br>Eighth Amendment to Amended and Restated<br>Agreement For Research & Development Alliance<br>on Triex Module Technology, effective as of<br>October 26, 2015, by and between The Research<br>Foundation For The State University of New York,<br>on behalf of the College of Nanoscale Science and<br>Engineering of the State University of New York,<br>and Silevo, LLC.<br>Ninth Amendment to Amended and Restated<br>Agreement For Research & Development Alliance<br>on Triex Module Technology, effective as of<br>December 9, 2015, by and between The Research<br>Foundation For The State University of New York,<br>on behalf of the College of Nanoscale Science and<br>Engineering of the State University of New York,<br>and Silevo, LLC.<br>Tenth Amendment to Amended and Restated<br>Agreement For Research & Development Alliance<br>on Triex Module Technology, effective as of March<br>31, 2017, by and between The Research<br>Foundation For The State University of New York,<br>on behalf of the Colleges of Nanoscale Science<br>and Engineering of the State University of New<br>York, and Silevo, LLC.<br>Eleventh Amendment to Amended and Restated<br>Agreement for Research & Development Alliance<br>on Triex Module Technology, effective as of July<br>22, 2020, among the Research Foundation for the<br>State University of New York, Silevo, LLC and<br>Tesla Energy Operations, Inc<br>.||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
 |||**Form**|**File No.**|**Exhibit**|**Filing Date**||
@@ -1659,6 +1757,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 105 
 
+
+
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
 |||**Form**|**File No.**|**Exhibit**|**Filing Date**||
@@ -1667,6 +1767,8 @@ Our management is responsible for establishing and maintaining adequate internal
 
 
 106 
+
+
 
 |**Exhibit**<br>**Number**|**Exhibit Description**||**Incorporated by Referen**|**Incorporated by Referen**|**ce**|**Filed**<br>**Herewith**|
 |---|---|---|---|---|---|---|
@@ -1692,6 +1794,8 @@ Our management is responsible for establishing and maintaining adequate internal
 None. 
 
 107 
+
+
 
 ## **SIGNATURES** 
 
