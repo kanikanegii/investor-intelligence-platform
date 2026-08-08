@@ -1,0 +1,8 @@
+# Minimum mean score per RAGAS metric for run_eval.py to exit 0 (CI pass).
+# Tune these once you have a baseline run — these starting values are
+# deliberately conservative (not zero) so the gate isn't a no-op, but not so
+# strict that a reasonable pipeline fails immediately.
+faithfulness: 0.7
+answer_relevancy: 0.7
+context_precision: 0.6
+context_recall: 0.6

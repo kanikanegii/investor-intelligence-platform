@@ -1,82 +1,75 @@
-from pathlib import Path
+import re
 
-from langchain_core.documents import Document
 from langchain_experimental.text_splitter import SemanticChunker
 
 from dotenv import load_dotenv
 load_dotenv()
 
+from ingestion.schemas import ChunkMetadata, DocumentChunk, PageMarkdown, content_hash, make_chunk_id
+
+_HEADING_RE = re.compile(r"^#{1,6}\s+(.+)$", re.MULTILINE)
 
 
-def read_markdown(markdown_file: str) -> str:
+def _extract_section(text: str) -> str | None:
+    """Best-effort leading markdown heading for a chunk, or None if absent."""
+    match = _HEADING_RE.search(text)
+    return match.group(1).strip() if match else None
+
+
+def chunk_pages(
+    pages: list[PageMarkdown],
+    embeddings,
+    source_file: str,
+    company: str,
+    year: str,
+) -> list[DocumentChunk]:
     """
-    Read markdown content.
+    Semantically chunk each page independently, preserving page-level provenance.
+
+    A semantic breakpoint that would ideally span two pages gets split at the
+    page boundary instead. This trade-off buys deterministic page attribution
+    (needed for citations) without fragile character-offset recovery against a
+    flattened document. Acceptable for filings where tables/statements rarely
+    span exactly one page mid-sentence.
 
     Args:
-        markdown_file: Markdown file path.
+        pages: Per-page markdown, in document order.
+        embeddings: Azure OpenAI embedding model, used by SemanticChunker to
+            detect breakpoints.
+        source_file: Original PDF filename, stored on every chunk's metadata.
+        company: Company ticker/name, stored on every chunk's metadata.
+        year: Fiscal year, stored on every chunk's metadata.
 
     Returns:
-        Markdown content.
+        List of DocumentChunk with a document-wide monotonic chunk_index.
     """
-    return Path(markdown_file).read_text(encoding="utf-8")
-
-
-def chunk_markdown(
-    markdown_file: str,
-    embeddings
-) -> list[Document]:
-    """
-    Generate semantic chunks from markdown.
-
-    Args:
-        markdown_file: Markdown file path.
-        embeddings: Azure OpenAI embedding model.
-
-    Returns:
-        List of semantic chunks.
-    """
-    markdown_content = read_markdown(markdown_file)
-
     splitter = SemanticChunker(
         embeddings=embeddings,
         breakpoint_threshold_type="percentile"
     )
 
-    return splitter.create_documents([markdown_content])
+    chunks: list[DocumentChunk] = []
+    chunk_index = 0
 
-if __name__ == "__main__":
-    import os
-    from langchain_openai import AzureOpenAIEmbeddings
+    for page in pages:
+        for doc in splitter.create_documents([page.text]):
+            chunks.append(
+                DocumentChunk(
+                    metadata=ChunkMetadata(
+                        chunk_id=make_chunk_id(source_file, page.page_number, chunk_index),
+                        source_file=source_file,
+                        company=company,
+                        year=year,
+                        page_start=page.page_number,
+                        page_end=page.page_number,
+                        chunk_index=chunk_index,
+                        section=_extract_section(doc.page_content),
+                        content_hash=content_hash(doc.page_content),
+                        page_text=page.text,
+                    ),
+                    content=doc.page_content,
+                )
+            )
+            chunk_index += 1
 
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    api_key = os.getenv("AZURE_OPEN_AI_KEY")
-    model_name = os.getenv("MODEL_NAME")
-    # embedding_model = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
-
-    if not endpoint or not api_key:
-        raise RuntimeError(
-            "Missing Azure OpenAI credentials. Set AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY in .env."
-        )
-
-    embeddings = AzureOpenAIEmbeddings(
-        model = model_name,
-        azure_endpoint=endpoint,
-        api_key=api_key,
-    )
-
-    # markdown_file = "../data/markdown/2024_Apple.md"
-    markdown_file = "/Users/kanikanegi/Documents/Document_Copilot/AI-Powered-Investor-Intelligence-Platform/data/markdown/2024_Apple.md"
-
-    chunks = chunk_markdown(
-        markdown_file=markdown_file,
-        embeddings=embeddings
-    )
-
-    print(f"Generated {len(chunks)} chunks\n")
-
-    for index, chunk in enumerate(chunks[:3]):
-        print("=" * 80)
-        print(f"Chunk {index + 1}")
-        print("=" * 80)
-        print(chunk.page_content[:1000])
-        print()
+    return chunks

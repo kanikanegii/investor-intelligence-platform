@@ -1,28 +1,16 @@
+import logging
 import os
+import re
 
-from openai import AzureOpenAI
+import openai
+from openai import OpenAI
 from pydantic import BaseModel
 from dotenv import load_dotenv
+
 load_dotenv()
-import re
-import json
-import openai
-import os
-from openai import OpenAI
 
+logger = logging.getLogger(__name__)
 
-# def get_openai_client() -> AzureOpenAI:
-#     """
-#     Create Azure OpenAI client.
-
-#     Returns:
-#         Azure OpenAI client.
-#     """
-#     return AzureOpenAI(
-#         api_key=os.getenv("AZURE_OPEN_AI_KEY"),
-#         # api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-#         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
-#     )
 
 def get_openai_client() -> OpenAI:
     """
@@ -34,13 +22,14 @@ def get_openai_client() -> OpenAI:
     endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
 
     return OpenAI(
-        api_key=os.environ["AZURE_OPEN_AI_KEY"],
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
         base_url=endpoint.rstrip("/") + "/openai/v1/",
     )
 
 def get_structured_completion(
     prompt: str,
     response_model: type[BaseModel],
+    system_prompt: str,
     model: str | None = None
 ) -> BaseModel:
     """
@@ -49,21 +38,25 @@ def get_structured_completion(
     Args:
         prompt: Input prompt.
         response_model: Pydantic response model.
+        system_prompt: System role instructions for this specific call. This
+            is caller-supplied rather than hardcoded here, since callers use
+            this function for unrelated tasks (KPI extraction, query
+            rewriting, HyDE, context compression) that each need their own
+            framing — a single fixed persona would be wrong for most of them.
         model: Azure OpenAI deployment name.
 
     Returns:
         Parsed response model.
     """
     # Read deployment name from environment when not provided; do not fallback to a hardcoded name
-    model=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
-
+    model = model or os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
 
     client = get_openai_client()
 
     messages = [
         {
             "role": "system",
-            "content": "You are an expert financial analyst."
+            "content": system_prompt
         },
         {
             "role": "user",
@@ -78,7 +71,7 @@ def get_structured_completion(
             input=messages,
             text_format=response_model,
         )
-        print("[debug] Structured parsed output:", response.output_parsed)
+        logger.debug("Structured parsed output: %s", response.output_parsed)
 
         return response.output_parsed
 
@@ -93,7 +86,7 @@ def get_structured_completion(
             )
 
             text = fallback.choices[0].message.content
-            print("[debug] Fallback raw text response:\n", text)
+            logger.debug("Fallback raw text response: %s", text)
 
             # Try to extract the first JSON object from the model output
             match = re.search(r"\{.*\}", text, re.S)

@@ -1,0 +1,119 @@
+# Golden Q&A dataset for RAGAS evaluation (evaluation/run_eval.py).
+#
+# Format per entry:
+#   question: natural-language question, same shape as what a user might ask
+#   company / year: which ingested filing this targets
+#   ground_truth: the reference answer RAGAS compares retrieval/generation against
+#     (used by context_recall / answer correctness-style metrics)
+#   expected_kpis: optional, only include when you have manually verified the
+#     figure against the actual filing — do NOT copy numbers from an LLM
+#     response without checking the source PDF yourself. Omit if unverified.
+#
+# The Apple entries below use figures that were verified against this
+# project's actual extraction output during development. Microsoft/Tesla
+# entries are intentionally qualitative-only (no numeric expected_kpis) until
+# someone verifies their figures against the source filings and fills them in.
+
+- question: "What was Apple's total revenue in fiscal year 2024?"
+  company: Apple
+  year: 2024
+  ground_truth: "Apple's total revenue for fiscal year 2024 was $391,035 million."
+  expected_kpis:
+    revenue: "$391,035"
+
+- question: "What was Apple's net income in fiscal year 2024?"
+  company: Apple
+  year: 2024
+  ground_truth: "Apple's net income for fiscal year 2024 was $93,736 million."
+  expected_kpis:
+    net_income: "$93,736"
+
+- question: "What was Apple's operating income in fiscal year 2024?"
+  company: Apple
+  year: 2024
+  ground_truth: "Apple's operating income for fiscal year 2024 was $123,216 million."
+  expected_kpis:
+    operating_income: "$123,216"
+
+- question: "What were Apple's total assets in fiscal year 2024?"
+  company: Apple
+  year: 2024
+  ground_truth: "Apple's total assets as of fiscal year 2024 were $364,980 million."
+  expected_kpis:
+    total_assets: "$364,980"
+
+- question: "What were Apple's total liabilities in fiscal year 2024?"
+  company: Apple
+  year: 2024
+  ground_truth: "Apple's total liabilities as of fiscal year 2024 were $308,030 million."
+  expected_kpis:
+    total_liabilities: "$308,030"
+
+- question: "What are the top risk factors Apple disclosed for fiscal year 2024?"
+  company: Apple
+  year: 2024
+  ground_truth: >
+    Apple's disclosed risk factors for fiscal year 2024 include macroeconomic
+    conditions such as inflation and interest rate fluctuations, legal and tax
+    uncertainties including the European Commission State Aid Decision,
+    supply chain concentration and single-source component risk, intense
+    competition and pricing pressure, and concentration of manufacturing in China.
+
+- question: "What are Apple's main growth drivers for fiscal year 2024?"
+  company: Apple
+  year: 2024
+  ground_truth: >
+    Apple's growth drivers for fiscal year 2024 include Services expansion
+    (advertising, App Store, cloud services), new product and software
+    releases, increased Mac laptop demand, and ongoing R&D investment.
+
+- question: "What is Microsoft's business primarily focused on according to its fiscal year 2024 filing?"
+  company: Microsoft
+  year: 2024
+  ground_truth: >
+    Microsoft's fiscal year 2024 filing describes a business focused on cloud
+    computing (Azure), productivity software (Microsoft 365), and personal
+    computing products, with significant investment in AI-related offerings.
+
+- question: "What risk factors does Microsoft disclose related to AI in its fiscal year 2024 filing?"
+  company: Microsoft
+  year: 2024
+  ground_truth: >
+    Microsoft's fiscal year 2024 filing discloses risks related to AI including
+    potential for AI systems to produce inaccurate or harmful content,
+    regulatory scrutiny of AI technologies, and competitive pressure to invest
+    heavily in AI infrastructure.
+
+- question: "What competitive pressures does Microsoft describe in its fiscal year 2024 filing?"
+  company: Microsoft
+  year: 2024
+  ground_truth: >
+    Microsoft's fiscal year 2024 filing describes competitive pressure across
+    cloud services, productivity software, and devices from other large
+    technology companies investing heavily in similar markets.
+
+- question: "What does Tesla identify as key risks to its business in its fiscal year 2024 filing?"
+  company: Tesla
+  year: 2024
+  ground_truth: >
+    Tesla's fiscal year 2024 filing identifies risks including production and
+    supply chain constraints, dependence on key personnel, competition in the
+    EV and energy storage markets, and regulatory/policy changes affecting
+    EV incentives.
+
+- question: "What growth initiatives does Tesla describe in its fiscal year 2024 filing?"
+  company: Tesla
+  year: 2024
+  ground_truth: >
+    Tesla's fiscal year 2024 filing describes growth initiatives including
+    expansion of vehicle production capacity, growth of its energy generation
+    and storage business, and continued investment in autonomous driving
+    technology.
+
+- question: "What manufacturing locations does Tesla describe in its fiscal year 2024 filing?"
+  company: Tesla
+  year: 2024
+  ground_truth: >
+    Tesla's fiscal year 2024 filing describes manufacturing operations
+    including its factories in Fremont California, Shanghai, Berlin, and
+    Austin Texas (Gigafactory Texas).

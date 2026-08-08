@@ -2,12 +2,38 @@ from pathlib import Path
 
 import pymupdf4llm
 
+from ingestion.schemas import PageMarkdown
+
+
 class PDFToMarkdownConverter:
     """Convert PDF documents to Markdown."""
 
+    def convert_pdf_pages(self, pdf_path: str) -> list[PageMarkdown]:
+        """
+        Convert a PDF to per-page markdown, preserving page numbers.
+
+        Args:
+            pdf_path: Source PDF path.
+
+        Returns:
+            One PageMarkdown per non-empty page (1-indexed page_number).
+        """
+        pdf_file = Path(pdf_path)
+
+        if not pdf_file.exists():
+            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+
+        pages = pymupdf4llm.to_markdown(str(pdf_file), page_chunks=True)
+
+        return [
+            PageMarkdown(page_number=page["metadata"]["page_number"], text=page["text"])
+            for page in pages
+            if page["text"].strip()
+        ]
+
     def convert_pdf(self, pdf_path: str, output_dir: str) -> str:
         """
-        Convert a PDF document to Markdown.
+        Convert a PDF document to a single Markdown file for human inspection.
 
         Args:
             pdf_path: Source PDF path.
@@ -17,14 +43,12 @@ class PDFToMarkdownConverter:
             Generated markdown file path.
         """
         pdf_file = Path(pdf_path)
-
-        if not pdf_file.exists():
-            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+        pages = self.convert_pdf_pages(pdf_path)
 
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        markdown_content = pymupdf4llm.to_markdown(str(pdf_file))
+        markdown_content = "\n\n".join(page.text for page in pages)
 
         markdown_file = output_path / f"{pdf_file.stem}.md"
 
@@ -58,22 +82,3 @@ class PDFToMarkdownConverter:
             markdown_files.append(markdown_file)
 
         return markdown_files
-
-
-if __name__ == "__main__":
-    repo_root = Path(__file__).resolve().parents[1]
-
-    input_dir = repo_root / "data" / "raw_pdfs"
-    output_dir = repo_root / "data" / "markdown"
-
-    converter = PDFToMarkdownConverter()
-
-    markdown_files = converter.convert_directory(
-        input_dir=str(input_dir),
-        output_dir=str(output_dir)
-    )
-
-    print(f"Successfully converted {len(markdown_files)} PDF(s):")
-
-    for markdown_file in markdown_files:
-        print(f"  - {markdown_file}")
