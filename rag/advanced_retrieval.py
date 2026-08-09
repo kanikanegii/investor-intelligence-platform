@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from rag.context_compression import compress_chunk, merge_to_parent_pages
 from rag.hyde import generate_hypothetical_answer
@@ -53,25 +54,40 @@ def advanced_retrieve(
         Up to top_k chunks, ready to be formatted into citation-numbered
         context blocks (see rag/kpi_extractor_rag.py::retrieve_context).
     """
-    queries = [question]
-    if use_query_expansion:
-        queries += expand_query(question)
-        logger.info("Expanded query into %d variants", len(queries))
+    # Query expansion and HyDE are both independent LLM calls that only
+    # depend on the original question -- run them concurrently rather than
+    # paying their latency back to back.
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        expansion_future = executor.submit(expand_query, question) if use_query_expansion else None
+        hyde_future = executor.submit(generate_hypothetical_answer, question) if use_hyde else None
 
-    vector_query_text = generate_hypothetical_answer(question) if use_hyde else None
+        queries = [question]
+        if expansion_future is not None:
+            queries += expansion_future.result()
+            logger.info("Expanded query into %d variants", len(queries))
 
-    candidates: dict[str, RetrievedChunk] = {}
-    for variant in queries:
-        for chunk in retriever.invoke(
-            query=variant,
-            company=company,
-            year=year,
-            top_k=candidate_k,
-            vector_query_text=vector_query_text,
-        ):
-            existing = candidates.get(chunk.chunk_id)
-            if existing is None or chunk.score > existing.score:
-                candidates[chunk.chunk_id] = chunk
+        vector_query_text = hyde_future.result() if hyde_future is not None else None
+
+    # Each query variant's retrieval is an independent network call (embed +
+    # search) -- run them concurrently instead of one at a time.
+    with ThreadPoolExecutor(max_workers=len(queries)) as executor:
+        results = executor.map(
+            lambda variant: retriever.invoke(
+                query=variant,
+                company=company,
+                year=year,
+                top_k=candidate_k,
+                vector_query_text=vector_query_text,
+            ),
+            queries,
+        )
+
+        candidates: dict[str, RetrievedChunk] = {}
+        for chunks in results:
+            for chunk in chunks:
+                existing = candidates.get(chunk.chunk_id)
+                if existing is None or chunk.score > existing.score:
+                    candidates[chunk.chunk_id] = chunk
 
     pool = list(candidates.values())
     logger.info("Deduplicated candidate pool: %d chunks", len(pool))
@@ -85,7 +101,12 @@ def advanced_retrieve(
         pool = merge_to_parent_pages(pool)
         logger.info("After auto-merge to parent pages: %d chunks", len(pool))
 
-    if use_compression:
-        pool = [compress_chunk(question, chunk) for chunk in pool]
+    if use_compression and pool:
+        # Each chunk's compression is an independent LLM call -- run them
+        # concurrently rather than one at a time (this was the single
+        # largest sequential cost in the whole pipeline: up to top_k
+        # separate round trips, back to back).
+        with ThreadPoolExecutor(max_workers=len(pool)) as executor:
+            pool = list(executor.map(lambda chunk: compress_chunk(question, chunk), pool))
 
     return pool

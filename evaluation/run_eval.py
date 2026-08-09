@@ -1,8 +1,6 @@
-import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -14,11 +12,11 @@ from vectorstore.azure_ai_search import AzureAISearchVectorStore, Retriever
 
 from evaluation.golden_dataset import load_golden_dataset
 from evaluation.ragas_harness import build_ragas_dataset, run_ragas_eval
+from evaluation.scoring import extract_scores, save_report
 
 logger = logging.getLogger(__name__)
 
 _THRESHOLDS_PATH = Path(__file__).resolve().parent / "thresholds.yaml"
-_REPORTS_DIR = Path(__file__).resolve().parent / "reports"
 
 
 def _load_thresholds() -> dict[str, float]:
@@ -38,27 +36,6 @@ def _passes_thresholds(scores: dict[str, float], thresholds: dict[str, float]) -
         else:
             logger.info("Metric %s = %.3f (threshold %.3f) OK", metric, actual, minimum)
     return passed
-
-
-def _extract_scores(result) -> dict[str, float]:
-    """Pull aggregate per-metric scores out of a ragas EvaluationResult.
-
-    ragas' public surface for this has shifted across versions; try the
-    documented dict-like access first and fall back to the private
-    _repr_dict attribute (used by __repr__) if that's unavailable.
-    """
-    try:
-        return {metric: float(value) for metric, value in dict(result).items()}
-    except (TypeError, ValueError):
-        return {metric: float(value) for metric, value in result._repr_dict.items()}
-
-
-def _save_report(scores: dict[str, float]) -> Path:
-    _REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    report_path = _REPORTS_DIR / f"eval_{timestamp}.json"
-    report_path.write_text(json.dumps(scores, indent=2), encoding="utf-8")
-    return report_path
 
 
 def main() -> None:
@@ -84,8 +61,8 @@ def main() -> None:
 
     dataset = build_ragas_dataset(examples, retriever)
     result = run_ragas_eval(dataset)
-    scores = _extract_scores(result)
-    report_path = _save_report(scores)
+    scores = extract_scores(result)
+    report_path = save_report(scores, prefix="eval")
 
     print(result)
     logger.info("Report saved to %s", report_path)

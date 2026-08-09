@@ -1,12 +1,13 @@
 import logging
 import os
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from langchain_openai import AzureOpenAIEmbeddings
 from pydantic import BaseModel
 
 from auth.entra import require_role
 from common.prompt_safety import TRUST_BOUNDARY_INSTRUCTION, neutralize_tag_escapes, wrap_untrusted
+from evaluation.scoring import save_report, score_response
 from rag.advanced_retrieval import advanced_retrieve
 from vectorstore.azure_ai_search import AzureAISearchVectorStore, Retriever
 from llm.azure_openai import get_openai_client
@@ -30,8 +31,31 @@ class ChatRequest(BaseModel):
     year: int | None = None
 
 
+def _score_and_log_chat_response(question: str, answer: str, retrieved_contexts: list[str]) -> None:
+    """
+    Reference-free RAGAS scoring (faithfulness, answer_relevancy), run after
+    the response has already been sent to the user -- this calls a judge LLM,
+    so it must never block the user-facing request. Failures here are logged
+    and otherwise ignored; they must never surface to the caller, since by
+    the time this runs the response has already gone out.
+    """
+    try:
+        scores = score_response(question, answer, retrieved_contexts)
+        report_path = save_report(
+            {"question": question, "answer": answer, "scores": scores},
+            prefix="chat",
+        )
+        logger.info("Chat response scored (async): %s -> %s", scores, report_path)
+    except Exception:
+        logger.exception("Background chat scoring failed (does not affect the user-facing response)")
+
+
 @router.post("/chat")
-async def chat(request: ChatRequest, claims: dict = Depends(require_role("Analyst.Read"))):
+async def chat(
+    request: ChatRequest,
+    background_tasks: BackgroundTasks,
+    claims: dict = Depends(require_role("Analyst.Read")),
+):
     try:
         # Initialize vector store and retriever
         vector_store = AzureAISearchVectorStore(
@@ -72,6 +96,14 @@ async def chat(request: ChatRequest, claims: dict = Depends(require_role("Analys
             ]
         )
         answer = response.choices[0].message.content
+
+        background_tasks.add_task(
+            _score_and_log_chat_response,
+            question=request.question,
+            answer=answer,
+            retrieved_contexts=[doc.content for doc in docs],
+        )
+
         return {"answer": answer}
     except Exception as e:
         logger.exception("Chat request failed")

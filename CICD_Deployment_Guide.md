@@ -329,6 +329,66 @@ manually-patched env vars instead of ever picking up what CI/CD intended.
 the pipeline creates actually agree — see the **Troubleshooting** section
 at the bottom of this doc for the full story.
 
+**Follow-up incident, worth knowing even after the name matched:**
+correcting the Secret name wasn't actually sufficient by itself. The same
+manual `kubectl set env deployment/invint --from=secret/invint-env` patch
+that created the naming mismatch had also added 13 **individual** `env:`
+entries directly onto the live Deployment object — one per variable,
+each pointing at the old `invint-env` Secret via `valueFrom.secretKeyRef`.
+Kubernetes resolves `env:` (explicit list) and `envFrom:` (bulk import)
+independently, and **`env:` entries win** over `envFrom`-sourced values
+with the same name. This repo's `deployment.yaml` has never declared an
+`env:` field at all — only `envFrom` — but `kubectl apply` doesn't remove
+fields it never applied in the first place; since those 13 entries were
+set imperatively (`kubectl set env`, not `kubectl apply`), they were
+invisible to `kubectl apply`'s diff and survived every deploy untouched.
+
+**Symptom this produced**, specifically because it's non-obvious: the
+`invint-secrets` Secret was completely correct, `envFrom` was correctly
+configured, `kubectl create secret ... | kubectl apply -f -` ran
+successfully every deploy — and yet the running pod still used the old,
+quote-corrupted `AZURE_OPENAI_ENDPOINT` value, causing
+`httpx.UnsupportedProtocol: Request URL is missing an 'http://' or
+'https://' protocol` on every Azure OpenAI call. Nothing about the
+Secret itself was wrong; the pod simply wasn't using it for anything that
+also had a same-named `env:` override.
+
+**Diagnosis technique**: don't stop at confirming the Secret's contents
+(`kubectl get secret ... | base64 -d`) — that only proves what *should* be
+available, not what the pod actually resolved. Check the pod's real
+environment directly:
+```bash
+kubectl exec deployment/invint -- printenv AZURE_OPENAI_ENDPOINT
+```
+and cross-reference against whether the Deployment has a conflicting `env:`
+list at all:
+```bash
+kubectl get deployment invint -o jsonpath='{.spec.template.spec.containers[0].env}'
+```
+A non-empty result here, for a Deployment whose YAML in the repo only
+declares `envFrom`, is itself the smoking gun.
+
+**Fix**: remove the stale `env:` list directly (declarative `apply` can't
+reach it, since it was never declared through `apply` to begin with):
+```bash
+kubectl patch deployment invint --type=json \
+  -p='[{"op":"remove","path":"/spec/template/spec/containers/0/env"}]'
+kubectl rollout restart deployment/invint
+```
+Then delete the now-fully-orphaned `invint-env` Secret entirely, so this
+exact confusion can't recur:
+```bash
+kubectl delete secret invint-env
+```
+
+**General lesson**: any time `kubectl set <field>` or similar imperative
+commands are used as a quick patch (reasonable in the moment, e.g. for live
+debugging), leave a note to reconcile it back into the declarative
+manifests — or explicitly undo it — once the immediate issue is resolved.
+Otherwise it becomes invisible drift that `kubectl apply` cannot see or
+correct on its own, and can silently override a completely correct fix
+made weeks later.
+
 ---
 
 # service.yaml
@@ -683,15 +743,18 @@ jobs:
             -u ${{ secrets.ACR_USERNAME }} \
             -p ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build Docker Image
-        run: |
-          docker build \
-            -t ${{ secrets.ACR_LOGIN_SERVER }}/invint:latest .
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Push Docker Image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker Image
         run: |
-          docker push \
-            ${{ secrets.ACR_LOGIN_SERVER }}/invint:latest
+          docker buildx build \
+            --platform linux/arm64 \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/invint:latest \
+            --push .
 
       - name: Get AKS Credentials
         run: |
@@ -861,48 +924,73 @@ specifically (as opposed to `az acr login` above, which authenticates the
 `az` CLI's own session). Uses ACR's **admin username/password** credentials
 rather than the Azure service principal from the `Azure Login` step.
 
-This is a known, deliberately temporary tradeoff, not the ideal end state —
-see `TODO_acr_rbac.md`: ACR currently has admin credentials enabled, when
-the more secure long-term approach is an `AcrPush`-scoped role assignment
-for this pipeline's service principal instead, with the admin account
-disabled. Not yet migrated — flagged as a separate, deliberately deferred
-task since changing it risks breaking image pushes if the role assignment
-isn't verified working before the admin account is disabled.
+**This was actually attempted and reverted, not just left as a "someday"
+item** — see the Troubleshooting section at the bottom of this doc for the
+full story. Short version: an `AcrPush` role assignment was created for
+this pipeline's service principal, but RBAC-based `docker push` failed with
+`insufficient_scope` for **both** that new service principal and a personal
+account that had held `AcrPush` for weeks — isolated via direct testing to
+a registry-level issue (ACR's own token-issuing service wasn't honoring the
+role assignment, despite ARM showing it correctly), not a configuration
+mistake. Admin credentials push successfully, so they're what's actually in
+use here — this is a known, currently-unresolved gap tracked in
+`TODO_acr_rbac.md`, not a decision anyone's happy to leave permanent.
 
 ---
 
-## Build Docker Image
+## Set up QEMU / Set up Docker Buildx
 
 ```yaml
-docker build
+- uses: docker/setup-qemu-action@v3
+- uses: docker/setup-buildx-action@v3
 ```
 
-Creates a Docker image from:
+Two setup steps that make the next step able to build a container image for
+a **different CPU architecture than the GitHub runner itself is running
+on**. `setup-qemu-action` registers QEMU-based emulation for other
+architectures on the runner; `setup-buildx-action` sets up Docker's
+extended `buildx` builder (as opposed to the classic `docker build`), which
+is what actually understands the `--platform` flag used in the next step.
 
-```text
-Dockerfile
-Source Code
-Requirements
-Dependencies
-```
-
-This produces a deployable container image.
+**Why this is here at all** — a real incident, not a precaution added
+speculatively: see the Troubleshooting section for the full story. Short
+version: the AKS node pool runs on **arm64** (Azure's Ampere-based nodes),
+but GitHub's `ubuntu-latest` runners are **amd64**, and a plain
+`docker build` with no `--platform` flag silently builds for whatever
+architecture the *builder* is running on. Without these two steps, the
+next step would produce an amd64 image that crashes on every arm64 node
+with `exec format error` — which is exactly what happened the first time
+this pipeline ever ran end to end.
 
 ---
 
-## Push Docker Image
+## Build and Push Docker Image
 
 ```yaml
-docker push
+docker buildx build \
+  --platform linux/arm64 \
+  -t ${{ secrets.ACR_LOGIN_SERVER }}/invint:latest \
+  --push .
 ```
 
-Uploads the Docker image to Azure Container Registry.
+Builds the image and pushes it in one step (previously two separate
+`docker build` / `docker push` steps — combined because `buildx`'s
+multi-platform build output doesn't reliably load into the local Docker
+image store the way a native `docker build` does; pushing directly with
+`--push` sidesteps that entirely and is the standard pattern for
+cross-platform `buildx` builds).
 
-After this step:
+**`--platform linux/arm64`**: explicitly targets the AKS node pool's actual
+architecture, using the QEMU emulation set up above (the GitHub runner
+itself is amd64, so this build is emulated, not native — slower than a
+native build, but correctness matters more than speed here).
 
-```text
-AKS Can Pull The Image
-```
+**If your own cluster's nodes are amd64 instead** (the far more common
+default for AKS — this project's arm64 node pool is a deliberate,
+less-typical choice, presumably for lower Azure compute cost): change this
+to `--platform linux/amd64`, or check with
+`kubectl get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}'`
+rather than assuming either way.
 
 ---
 
@@ -1121,3 +1209,157 @@ tried to run) and two secrets missing outright
 MSAL — both read via `os.environ[...]`, so a missing value crashes the app
 at startup, not just one request). Both are now fixed; see the Trigger and
 Create Kubernetes Secrets sections above for the details.
+
+---
+
+# Troubleshooting, part 2: the ACR RBAC attempt, and the arm64 architecture bug
+
+Once the fixes above landed, the pipeline made it much further than ever
+before — but still took two more real failures to get to a genuinely
+successful run. Both are worth understanding in detail, not just knowing
+"it works now."
+
+## Attempt: migrating off admin credentials to RBAC
+
+With everything else fixed, migrating `Docker Login to ACR` off admin
+credentials (`TODO_acr_rbac.md`) seemed like the natural next cleanup —
+same resource, no recreation needed (unlike, say, migrating Postgres to
+VNet integration), purely additive, easily reversible.
+
+**Steps taken:**
+1. Created an `AcrPush` role assignment, scoped to just the registry, for
+   the pipeline's service principal:
+   ```bash
+   az role assignment create \
+     --assignee <sp-app-id> \
+     --role AcrPush \
+     --scope <registry-resource-id>
+   ```
+2. Removed the `Docker Login to ACR` step, relying on `az acr login`
+   (already present) to configure Docker's credentials via the now-RBAC'd
+   service principal.
+3. Pushed to trigger the pipeline.
+
+**Result:** failed at `docker push` with `insufficient_scope: authorization
+failed`. Confirmed via `az role assignment list --scope <registry-id>`
+that the assignment genuinely existed and was correctly scoped — so this
+wasn't a typo or a missing step.
+
+## Diagnosing it: ruling things out one at a time
+
+Rather than guess, each plausible cause was tested directly and eliminated:
+
+1. **Propagation delay?** Waited 25+ minutes, retried — same error. Ruled
+   out (typical Azure RBAC propagation is seconds to a few minutes).
+2. **Network/firewall blocking the registry?**
+   ```bash
+   az acr show --name <registry> --query "{publicNetworkAccess, networkRuleSet}"
+   ```
+   Public access enabled, no IP restrictions. Ruled out.
+3. **Stale Docker credential cache?** `docker logout <registry>` then a
+   fresh `az acr login` — same error. Ruled out.
+4. **Inspect the actual token contents**, rather than trusting the error
+   message alone:
+   ```bash
+   az acr login --name <registry> --expose-token
+   # then decode the JWT payload (header.payload.signature, base64url):
+   python3 -c "
+   import json, base64
+   token = '<accessToken value>'
+   payload = token.split('.')[1]
+   payload += '=' * (-len(payload) % 4)
+   print(json.dumps(json.loads(base64.urlsafe_b64decode(payload)), indent=2))
+   "
+   ```
+   This was the decisive step. The decoded token's `aad_identity.RoleTemplate`
+   field was **`[]`** — empty. ACR's own token-issuing service had zero
+   roles on record for this identity, despite ARM (`az role assignment
+   list`) clearly showing the `AcrPush` grant. This is a distinct thing
+   from generic Azure RBAC propagation — ACR maintains its own internal
+   sync of role assignments, separate from ARM's control plane, and that
+   sync is what was stuck.
+5. **Is this specific to the new service principal, or the registry
+   itself?** Tested with a personal account that had held `AcrPush` for
+   **weeks**, not minutes — same `insufficient_scope` failure. This was
+   the conclusive test: it ruled out "just wait longer for this one
+   identity" and pointed at something wrong with the registry's RBAC path
+   in general.
+6. **Does *anything* still work?** Tested a push using the registry's
+   admin username/password directly (`az acr credential show`, then
+   `docker login -u <user> -p <password>`) — **this succeeded.** Definitive
+   isolation: admin auth works, RBAC-based push does not, for this
+   registry, right now, for every identity tested.
+
+## Decision: revert, don't keep pushing on it
+
+Given a real, working pipeline was the actual goal (not RBAC purity for its
+own sake), the `Docker Login to ACR` admin-credential step was restored,
+and the RBAC attempt left as a known, still-open issue rather than
+something to keep debugging live in the CI/CD critical path. The `AcrPush`
+role assignment itself was left in place (harmless, and might start being
+honored once whatever's stuck on ACR's side catches up) — just not relied
+upon. Revisit this by re-running the token-inspection command above; if
+`RoleTemplate` is no longer empty, RBAC may be safe to re-attempt.
+
+## Second failure, on the very next run: `exec format error`
+
+With admin credentials restored, the pipeline ran further than ever —
+build, push, deploy, restart all succeeded — but `Verify Rollout` failed.
+The new pod was stuck in `CrashLoopBackOff`:
+```bash
+kubectl get pods -l app=invint
+kubectl logs <pod-name> --previous
+# exec /usr/local/bin/uvicorn: exec format error
+```
+
+`exec format error` is a **CPU architecture mismatch** — a binary compiled
+for one architecture, run on a kernel expecting another. Confirmed the
+node pool's actual architecture directly rather than assuming:
+```bash
+kubectl get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}'
+# -> arm64
+```
+
+This cluster's node pool is **arm64** (Azure's Ampere-based nodes) — a
+less common, presumably cost-driven choice, not the more typical amd64
+default. GitHub's `ubuntu-latest` runners are **amd64**, and a plain
+`docker build` with no `--platform` flag silently builds for whatever
+architecture the *builder* is running on — producing an amd64 image that
+can't execute on arm64 nodes at all.
+
+**Why this had never surfaced before**: every image ever running on this
+cluster prior to this session was built locally by hand, almost certainly
+on an Apple Silicon Mac (arm64) — which happened to match the cluster by
+coincidence, not by design. This pipeline's very first successful build
+was the first time an image was ever built on an amd64 machine for this
+arm64 cluster.
+
+**Fix**: `docker/setup-qemu-action@v3` + `docker/setup-buildx-action@v3`,
+then `docker buildx build --platform linux/arm64 ... --push` instead of
+plain `docker build` + `docker push`. See the `Build and Push Docker
+Image` section above for the full explanation. This produces a correctly
+emulated arm64 image regardless of the runner's own native architecture.
+
+## Outcome
+
+The very next run after this fix passed every single step, including
+`Verify Rollout` — the first fully green, fully verified run this pipeline
+has ever had. Confirmed independently of GitHub's own reporting:
+```bash
+kubectl get pods -l app=invint          # 1/1 Running, 0 restarts
+kubectl get deployment invint -o jsonpath='{...image}'   # :latest, freshly pushed
+curl -I https://investor-ai-platform.site/                # 200 OK
+```
+
+## One more, found only once a real user tried the chat feature
+
+The pod was healthy and the dashboard loaded, but `/api/chat` still failed
+end-to-end with `openai.APIConnectionError: Connection error` — misleading
+at a glance, since it looks network-related but wasn't. This turned out to
+be a **third instance of the same root problem** as the original
+`invint-env`/`invint-secrets` naming mismatch: fixing the Secret's *name*
+wasn't the whole story, because leftover individual `env:` entries on the
+Deployment (from the same old manual patch) silently override same-named
+`envFrom` values. See **`envFrom`** in the `deployment.yaml` section above
+for the full diagnosis and fix — kept there instead of duplicated here,
+since it's really a deeper layer of that same incident, not a new one.
