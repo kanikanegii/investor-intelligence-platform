@@ -1,16 +1,14 @@
 import logging
 import os
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from langchain_openai import AzureOpenAIEmbeddings
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from auth.entra import require_role
 from common.prompt_safety import TRUST_BOUNDARY_INSTRUCTION, neutralize_tag_escapes, wrap_untrusted
 from evaluation.scoring import save_report, score_response
-from rag.advanced_retrieval import advanced_retrieve
-from vectorstore.azure_ai_search import AzureAISearchVectorStore, Retriever
-from llm.azure_openai import get_openai_client
+from rag.advanced_retrieval import advanced_retrieve_async
+from vectorstore.azure_ai_search import AsyncRetriever
 
 logger = logging.getLogger(__name__)
 
@@ -53,32 +51,38 @@ def _score_and_log_chat_response(question: str, answer: str, retrieved_contexts:
 @router.post("/chat")
 async def chat(
     request: ChatRequest,
+    http_request: Request,
     background_tasks: BackgroundTasks,
     claims: dict = Depends(require_role("Analyst.Read")),
 ):
     try:
-        # Initialize vector store and retriever
-        vector_store = AzureAISearchVectorStore(
-            endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
-            api_key=os.getenv("AZURE_SEARCH_API_KEY"),
-            index_name=os.getenv("AZURE_SEARCH_INDEX_NAME")
-        )
-        embeddings = AzureOpenAIEmbeddings(
-            model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.environ["AZURE_OPENAI_API_KEY"],
-        )
-        retriever = Retriever(vector_store.client, embeddings)
+        # Reuse the app-lifetime clients created in main.py's lifespan
+        # (persistent connection pools) instead of constructing new ones
+        # per request -- see main.py's lifespan docstring for why that
+        # matters for latency, not just style.
+        state = http_request.app.state
+        retriever = AsyncRetriever(state.async_search_client, state.embeddings)
 
-        # Retrieve relevant context via the full advanced retrieval pipeline
-        # (multi-query expansion, HyDE, cross-encoder rerank, auto-merge to
-        # parent pages, compression) — same pipeline used for KPI extraction.
-        docs = advanced_retrieve(
+        # Retrieve relevant context via the full advanced retrieval
+        # pipeline (multi-query expansion, HyDE, cross-encoder rerank,
+        # auto-merge to parent pages, compression) — same pipeline used
+        # for KPI extraction, async variant (see advanced_retrieval.py).
+        docs = await advanced_retrieve_async(
             retriever=retriever,
             question=request.question,
             company=request.company,
             year=str(request.year) if request.year else None,
+            # HyDE dropped for chat latency -- a reasoned judgment call
+            # (multi-query expansion already provides retrieval diversity),
+            # NOT yet validated against the eval harness -- see
+            # EVALUATION_AND_LATENCY.md for the open follow-up to actually
+            # A/B this with real faithfulness/relevancy numbers. KPI
+            # extraction (kpi_extractor_rag.py) keeps HyDE on -- that path
+            # isn't request-latency-sensitive.
+            use_hyde=False,
+            openai_client=state.async_openai_client,
         )
+
         context = "\n\n".join(neutralize_tag_escapes(doc.content) for doc in docs)
 
         user_prompt = (
@@ -87,8 +91,7 @@ async def chat(
             f"Question: {request.question}"
         )
 
-        client = get_openai_client()
-        response = client.chat.completions.create(
+        response = await state.async_openai_client.chat.completions.create(
             model=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT"),
             messages=[
                 {"role": "system", "content": _CHAT_SYSTEM_PROMPT},
@@ -105,6 +108,6 @@ async def chat(
         )
 
         return {"answer": answer}
-    except Exception as e:
+    except Exception:
         logger.exception("Chat request failed")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Chat request failed. Please try again.")

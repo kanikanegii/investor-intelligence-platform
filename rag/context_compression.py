@@ -1,7 +1,8 @@
+from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from common.prompt_safety import TRUST_BOUNDARY_INSTRUCTION, neutralize_tag_escapes, wrap_untrusted
-from llm.azure_openai import get_structured_completion
+from llm.azure_openai import get_structured_completion, get_structured_completion_async
 from vectorstore.azure_ai_search import RetrievedChunk
 
 _SYSTEM_PROMPT = (
@@ -15,6 +16,22 @@ _SYSTEM_PROMPT = (
 
 class CompressedChunk(BaseModel):
     relevant_text: str
+
+
+def _build_prompt(question: str, chunk: RetrievedChunk) -> str:
+    passage = wrap_untrusted(neutralize_tag_escapes(chunk.content))
+
+    return f"""{TRUST_BOUNDARY_INSTRUCTION}
+
+From the passage below, extract only the complete sentences relevant to
+answering this question. Copy them exactly as written — do not paraphrase,
+summarize, reorder, or combine sentences. If nothing in the passage is
+relevant, return an empty string rather than guessing.
+
+Question: {question}
+
+Passage:
+{passage}"""
 
 
 def compress_chunk(question: str, chunk: RetrievedChunk) -> RetrievedChunk:
@@ -34,24 +51,23 @@ def compress_chunk(question: str, chunk: RetrievedChunk) -> RetrievedChunk:
     Returns:
         A copy of chunk with content replaced by the compressed text.
     """
-    passage = wrap_untrusted(neutralize_tag_escapes(chunk.content))
-
-    prompt = f"""{TRUST_BOUNDARY_INSTRUCTION}
-
-From the passage below, extract only the complete sentences relevant to
-answering this question. Copy them exactly as written — do not paraphrase,
-summarize, reorder, or combine sentences. If nothing in the passage is
-relevant, return an empty string rather than guessing.
-
-Question: {question}
-
-Passage:
-{passage}"""
-
     result = get_structured_completion(
-        prompt=prompt,
+        prompt=_build_prompt(question, chunk),
         response_model=CompressedChunk,
         system_prompt=_SYSTEM_PROMPT,
+    )
+    return chunk.model_copy(update={"content": result.relevant_text or chunk.content})
+
+
+async def compress_chunk_async(
+    question: str, chunk: RetrievedChunk, client: AsyncOpenAI | None = None
+) -> RetrievedChunk:
+    """Async version of compress_chunk, used by the chat request path."""
+    result = await get_structured_completion_async(
+        prompt=_build_prompt(question, chunk),
+        response_model=CompressedChunk,
+        system_prompt=_SYSTEM_PROMPT,
+        client=client,
     )
     return chunk.model_copy(update={"content": result.relevant_text or chunk.content})
 

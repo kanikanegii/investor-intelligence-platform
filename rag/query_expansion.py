@@ -1,6 +1,7 @@
+from openai import AsyncOpenAI
 from pydantic import BaseModel
 
-from llm.azure_openai import get_structured_completion
+from llm.azure_openai import get_structured_completion, get_structured_completion_async
 
 _SYSTEM_PROMPT = (
     "You are a search query rewriting assistant supporting a document "
@@ -14,6 +15,20 @@ _SYSTEM_PROMPT = (
 
 class QueryVariants(BaseModel):
     queries: list[str]
+
+
+def _build_prompt(question: str, n: int) -> str:
+    return f"""Rewrite the question below into exactly {n} alternative
+phrasings that preserve its exact meaning and scope, to improve document
+retrieval recall. Vary vocabulary and sentence structure, not intent.
+
+Requirements:
+- Each rewrite must ask for the same information as the original — no broader, no narrower.
+- Do not add company names, dates, or figures that are not already in the question.
+- Do not answer the question.
+- Return exactly {n} items, each a single question, no numbering or explanation.
+
+Question: {question}"""
 
 
 def expand_query(question: str, n: int = 3) -> list[str]:
@@ -35,21 +50,20 @@ def expand_query(question: str, n: int = 3) -> list[str]:
         n alternative phrasings (does not include the original question —
         callers combine this with the original themselves).
     """
-    prompt = f"""Rewrite the question below into exactly {n} alternative
-phrasings that preserve its exact meaning and scope, to improve document
-retrieval recall. Vary vocabulary and sentence structure, not intent.
-
-Requirements:
-- Each rewrite must ask for the same information as the original — no broader, no narrower.
-- Do not add company names, dates, or figures that are not already in the question.
-- Do not answer the question.
-- Return exactly {n} items, each a single question, no numbering or explanation.
-
-Question: {question}"""
-
     result = get_structured_completion(
-        prompt=prompt,
+        prompt=_build_prompt(question, n),
         response_model=QueryVariants,
         system_prompt=_SYSTEM_PROMPT,
+    )
+    return result.queries
+
+
+async def expand_query_async(question: str, n: int = 3, client: AsyncOpenAI | None = None) -> list[str]:
+    """Async version of expand_query, used by the chat request path (see advanced_retrieval.py)."""
+    result = await get_structured_completion_async(
+        prompt=_build_prompt(question, n),
+        response_model=QueryVariants,
+        system_prompt=_SYSTEM_PROMPT,
+        client=client,
     )
     return result.queries

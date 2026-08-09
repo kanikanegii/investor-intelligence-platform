@@ -1,16 +1,20 @@
 import logging
 import os
+from contextlib import asynccontextmanager
 
+from azure.core.credentials import AzureKeyCredential
+from azure.search.documents.aio import SearchClient as AsyncSearchClient
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from langchain_openai import AzureOpenAIEmbeddings
 from dotenv import load_dotenv
 
 from common.logging_config import configure_logging
 from database.metrics import get_metrics
 from database.postgres_sql import create_database
 from database.create_table import create_tables
+from llm.azure_openai import get_async_openai_client
 from vectorstore.create_index import create_index
 from routes.health import router as health_router
 from routes.dashboard import router as dashboard_router
@@ -22,16 +26,21 @@ configure_logging()
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="AI-Powered Investor Intelligence Platform",
-    version="1.0.0"
-)
 
-
-@app.on_event("startup")
-def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """
-    Initialize database and vector index on app startup.
+    App-lifetime setup/teardown.
+
+    Database/index creation stays synchronous (startup-only, doesn't need
+    to be fast). The Azure OpenAI and AI Search clients are created here
+    -- once -- and reused for every /api/chat request via app.state,
+    instead of each request opening its own fresh connection pool (real,
+    measurable latency, not just a style preference: every request would
+    otherwise pay a full TCP/TLS handshake before even starting real work).
+    Ingestion doesn't share these: it runs via BackgroundTasks using the
+    existing sync clients, which have no equivalent per-request cost since
+    they're not on the request/response critical path.
     """
     create_database()
     create_tables()
@@ -44,6 +53,30 @@ def startup_event():
         )
     except Exception as e:
         logger.warning("Could not create vector index: %s", e)
+
+    app.state.async_openai_client = get_async_openai_client()
+    app.state.async_search_client = AsyncSearchClient(
+        endpoint=os.getenv("AZURE_SEARCH_ENDPOINT"),
+        index_name=os.getenv("AZURE_SEARCH_INDEX_NAME"),
+        credential=AzureKeyCredential(os.getenv("AZURE_SEARCH_API_KEY")),
+    )
+    app.state.embeddings = AzureOpenAIEmbeddings(
+        model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        api_key=os.environ["AZURE_OPENAI_API_KEY"],
+    )
+
+    yield
+
+    await app.state.async_openai_client.close()
+    await app.state.async_search_client.close()
+
+
+app = FastAPI(
+    title="AI-Powered Investor Intelligence Platform",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 
 app.include_router(

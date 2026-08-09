@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+from azure.search.documents.aio import SearchClient as AsyncSearchClient
 from azure.search.documents.models import QueryType, VectorizedQuery
 
 from common.retry import with_retry
@@ -43,6 +44,30 @@ def _escape_odata_literal(value: str) -> str:
     break out of the intended literal and inject arbitrary filter clauses.
     """
     return value.replace("'", "''")
+
+
+def _build_filter_expr(company: str | None, year: str | None) -> str:
+    """Shared by Retriever.invoke and AsyncRetriever.ainvoke."""
+    filter_clauses = ["is_current eq true"]
+    if company and year:
+        filter_clauses.append(f"company eq '{_escape_odata_literal(company)}'")
+        filter_clauses.append(f"year eq '{_escape_odata_literal(year)}'")
+    return " and ".join(filter_clauses)
+
+
+def _chunk_from_result(result: dict) -> "RetrievedChunk":
+    """Shared by Retriever.invoke and AsyncRetriever.ainvoke."""
+    return RetrievedChunk(
+        chunk_id=result["id"],
+        content=result.get("content", ""),
+        company=result.get("company", ""),
+        year=result.get("year", ""),
+        source_file=result.get("source_file", ""),
+        page_start=result.get("page_start") or 0,
+        page_end=result.get("page_end") or 0,
+        page_text=result.get("page_text") or result.get("content", ""),
+        score=result["@search.score"],
+    )
 
 
 class AzureAISearchVectorStore:
@@ -207,12 +232,7 @@ class Retriever:
         Returns:
             Retrieved chunks with full provenance for downstream citations.
         """
-        filter_clauses = ["is_current eq true"]
-        if company and year:
-            filter_clauses.append(f"company eq '{_escape_odata_literal(company)}'")
-            filter_clauses.append(f"year eq '{_escape_odata_literal(year)}'")
-        filter_expr = " and ".join(filter_clauses)
-
+        filter_expr = _build_filter_expr(company, year)
         embedding_text = vector_query_text or query
         vector_query = VectorizedQuery(
             vector=with_retry(self.embeddings.embed_query)(embedding_text),
@@ -229,17 +249,46 @@ class Retriever:
             semantic_configuration_name=_SEMANTIC_CONFIGURATION_NAME,
         )
 
-        return [
-            RetrievedChunk(
-                chunk_id=result["id"],
-                content=result.get("content", ""),
-                company=result.get("company", ""),
-                year=result.get("year", ""),
-                source_file=result.get("source_file", ""),
-                page_start=result.get("page_start") or 0,
-                page_end=result.get("page_end") or 0,
-                page_text=result.get("page_text") or result.get("content", ""),
-                score=result["@search.score"],
-            )
-            for result in results
-        ]
+        return [_chunk_from_result(result) for result in results]
+
+
+class AsyncRetriever:
+    """
+    Async counterpart of Retriever, used only by the chat request path
+    (routes/chat.py -> rag/advanced_retrieval.py) so this network call never
+    blocks the FastAPI event loop. Ingestion and evaluation keep using the
+    sync Retriever above -- see get_async_openai_client in
+    llm/azure_openai.py for why only the inline request path needs this.
+    """
+
+    def __init__(self, client: AsyncSearchClient, embeddings) -> None:
+        self.client = client
+        self.embeddings = embeddings
+
+    async def ainvoke(
+        self,
+        query: str,
+        company: str | None = None,
+        year: str | None = None,
+        top_k: int = 20,
+        vector_query_text: str | None = None,
+    ) -> list[RetrievedChunk]:
+        """Async version of Retriever.invoke -- same behavior, see there for details."""
+        filter_expr = _build_filter_expr(company, year)
+        embedding_text = vector_query_text or query
+        vector_query = VectorizedQuery(
+            vector=await with_retry(self.embeddings.aembed_query)(embedding_text),
+            k_nearest_neighbors=top_k,
+            fields="content_vector",
+        )
+
+        results = await with_retry(self.client.search)(
+            search_text=query,
+            vector_queries=[vector_query],
+            filter=filter_expr,
+            top=top_k,
+            query_type=QueryType.SEMANTIC,
+            semantic_configuration_name=_SEMANTIC_CONFIGURATION_NAME,
+        )
+
+        return [_chunk_from_result(result) async for result in results]

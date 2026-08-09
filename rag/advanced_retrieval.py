@@ -1,11 +1,14 @@
+import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from rag.context_compression import compress_chunk, merge_to_parent_pages
-from rag.hyde import generate_hypothetical_answer
-from rag.query_expansion import expand_query
+from openai import AsyncOpenAI
+
+from rag.context_compression import compress_chunk, compress_chunk_async, merge_to_parent_pages
+from rag.hyde import generate_hypothetical_answer, generate_hypothetical_answer_async
+from rag.query_expansion import expand_query, expand_query_async
 from rag.reranker import rerank
-from vectorstore.azure_ai_search import RetrievedChunk, Retriever
+from vectorstore.azure_ai_search import AsyncRetriever, RetrievedChunk, Retriever
 
 logger = logging.getLogger(__name__)
 
@@ -108,5 +111,102 @@ def advanced_retrieve(
         # separate round trips, back to back).
         with ThreadPoolExecutor(max_workers=len(pool)) as executor:
             pool = list(executor.map(lambda chunk: compress_chunk(question, chunk), pool))
+
+    return pool
+
+
+async def advanced_retrieve_async(
+    retriever: AsyncRetriever,
+    question: str,
+    company: str | None = None,
+    year: str | None = None,
+    top_k: int = 8,
+    candidate_k: int = 10,
+    use_query_expansion: bool = True,
+    use_hyde: bool = True,
+    use_reranking: bool = True,
+    use_auto_merge: bool = True,
+    use_compression: bool = True,
+    openai_client: AsyncOpenAI | None = None,
+) -> list[RetrievedChunk]:
+    """
+    Async counterpart of advanced_retrieve -- identical pipeline/behavior,
+    used by the chat request path (routes/chat.py) so it never blocks the
+    FastAPI event loop for the duration of a request. Ingestion and
+    evaluation keep calling the sync advanced_retrieve above (via
+    rag/kpi_extractor_rag.py), unchanged -- see get_async_openai_client in
+    llm/azure_openai.py for why only the inline request path needs this.
+
+    Uses asyncio.gather/asyncio.to_thread instead of ThreadPoolExecutor:
+    this already runs inside an event loop (the FastAPI request handler),
+    so native coroutines are the natural fit rather than a thread pool.
+
+    Args:
+        openai_client: The app-lifetime AsyncOpenAI client (see main.py's
+            lifespan), threaded through to every LLM call this pipeline
+            makes -- expansion, HyDE, compression -- so none of them opens
+            its own connection pool. Falls back to a per-call client if not
+            given, but every caller on the real request path should pass
+            one.
+    """
+    expansion_result: list[str] | None = None
+    hyde_result: str | None = None
+
+    if use_query_expansion and use_hyde:
+        expansion_result, hyde_result = await asyncio.gather(
+            expand_query_async(question, client=openai_client),
+            generate_hypothetical_answer_async(question, client=openai_client),
+        )
+    elif use_query_expansion:
+        expansion_result = await expand_query_async(question, client=openai_client)
+    elif use_hyde:
+        hyde_result = await generate_hypothetical_answer_async(question, client=openai_client)
+
+    queries = [question]
+    if expansion_result is not None:
+        queries += expansion_result
+        logger.info("Expanded query into %d variants", len(queries))
+
+    vector_query_text = hyde_result
+
+    # Each query variant's retrieval is an independent network call (embed +
+    # search) -- run them concurrently instead of one at a time.
+    results = await asyncio.gather(*[
+        retriever.ainvoke(
+            query=variant,
+            company=company,
+            year=year,
+            top_k=candidate_k,
+            vector_query_text=vector_query_text,
+        )
+        for variant in queries
+    ])
+
+    candidates: dict[str, RetrievedChunk] = {}
+    for chunks in results:
+        for chunk in chunks:
+            existing = candidates.get(chunk.chunk_id)
+            if existing is None or chunk.score > existing.score:
+                candidates[chunk.chunk_id] = chunk
+
+    pool = list(candidates.values())
+    logger.info("Deduplicated candidate pool: %d chunks", len(pool))
+
+    if use_reranking:
+        # rerank() is CPU-bound (local cross-encoder inference), not I/O --
+        # offload to a thread so it doesn't block the event loop for its
+        # duration, same reasoning as the sync version, different mechanism.
+        pool = await asyncio.to_thread(rerank, question, pool, top_k)
+    else:
+        pool = sorted(pool, key=lambda c: c.score, reverse=True)[:top_k]
+
+    if use_auto_merge:
+        pool = merge_to_parent_pages(pool)
+        logger.info("After auto-merge to parent pages: %d chunks", len(pool))
+
+    if use_compression and pool:
+        pool = await asyncio.gather(
+            *[compress_chunk_async(question, chunk, client=openai_client) for chunk in pool]
+        )
 
     return pool
