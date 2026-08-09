@@ -47,7 +47,8 @@ async def upload_document(
     file_path.write_bytes(content)
 
     try:
-        await upload_pdf(http_request.app.state.blob_service_client, file.filename, content)
+        blob_url = await upload_pdf(http_request.app.state.blob_service_client, file.filename, content)
+        logger.info("Persisted %s to Blob Storage: %s", file.filename, blob_url)
     except Exception:
         # Durability nice-to-have, not a hard dependency -- ingestion should
         # still proceed off the local copy even if Blob Storage is briefly
