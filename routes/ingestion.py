@@ -7,6 +7,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile
 from langchain_openai import AzureOpenAIEmbeddings
 
 from auth.entra import require_role
+from database.ingestion_log import get_ingestion_record
 from ingestion.ingest_documents import ingest_document
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
 
@@ -70,4 +71,34 @@ async def upload_document(
         "message": "Document accepted for processing",
         "file_name": file.filename,
         "status": "processing"
+    }
+
+
+@router.get("/upload/status/{file_name}")
+async def upload_status(
+    file_name: str,
+    claims: dict = Depends(require_role("Ingestion.Write")),
+):
+    """
+    Check the outcome of a previously submitted upload.
+
+    /upload only reports that a file was *accepted*, not that ingestion
+    actually succeeded -- the real pipeline runs in the background after
+    that response is already sent. A caller that wants to know the real
+    outcome (as opposed to just assuming success after some fixed delay,
+    which is what the dashboard used to do) should poll this endpoint by
+    file_name until status is no longer "not_found".
+    """
+    record = get_ingestion_record(file_name)
+
+    if record is None:
+        return {"file_name": file_name, "status": "not_found"}
+
+    return {
+        "file_name": file_name,
+        "status": record["status"],
+        "company": record["company"],
+        "year": record["year"],
+        "error_message": record["error_message"],
+        "ingested_at": record["ingested_at"],
     }

@@ -7,6 +7,8 @@ from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+from common.retry import with_content_filter_retry
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -89,6 +91,7 @@ def _is_structured_output_unsupported(exc: openai.BadRequestError) -> bool:
     return "response_format" in msg or "json_schema" in msg or "Structured Outputs" in msg
 
 
+@with_content_filter_retry
 def get_structured_completion(
     prompt: str,
     response_model: type[BaseModel],
@@ -139,6 +142,7 @@ def get_structured_completion(
         raise
 
 
+@with_content_filter_retry
 async def get_structured_completion_async(
     prompt: str,
     response_model: type[BaseModel],
