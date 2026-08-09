@@ -1,14 +1,14 @@
 import logging
 import os
-import shutil
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Request, UploadFile
 from langchain_openai import AzureOpenAIEmbeddings
 
 from auth.entra import require_role
 from database.ingestion_log import get_ingestion_record
 from ingestion.ingest_documents import ingest_document
+from storage.blob_storage import upload_pdf
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,7 @@ router = APIRouter()
 
 @router.post("/upload", status_code=202)
 async def upload_document(
+    http_request: Request,
     file: UploadFile = File(...),
     background_tasks: BackgroundTasks = None,
     claims: dict = Depends(require_role("Ingestion.Write")),
@@ -34,19 +35,24 @@ async def upload_document(
     """
     logger.info("Upload accepted from %s (%s): %s", claims.get("name"), claims.get("oid"), file.filename)
 
+    content = await file.read()
+
+    # Local disk is what the pipeline actually reads from (pymupdf4llm needs
+    # a real file path) -- but it's ephemeral, no PersistentVolumeClaim, so
+    # it's lost on the next pod restart/redeploy. Blob Storage below is the
+    # durable copy.
     upload_dir = Path("data/raw_pdfs")
-    upload_dir.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
+    upload_dir.mkdir(parents=True, exist_ok=True)
     file_path = upload_dir / file.filename
+    file_path.write_bytes(content)
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(
-            file.file,
-            buffer
-        )
+    try:
+        await upload_pdf(http_request.app.state.blob_service_client, file.filename, content)
+    except Exception:
+        # Durability nice-to-have, not a hard dependency -- ingestion should
+        # still proceed off the local copy even if Blob Storage is briefly
+        # unavailable. Logged clearly so a persistent failure is noticeable.
+        logger.exception("Failed to persist %s to Blob Storage (continuing with local copy only)", file.filename)
 
     embeddings = AzureOpenAIEmbeddings(
         model=os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),

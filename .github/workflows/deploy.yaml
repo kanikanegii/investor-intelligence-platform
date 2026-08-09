@@ -69,6 +69,7 @@ jobs:
             --from-literal=POSTGRES_DATABASE="${{ secrets.POSTGRES_DATABASE }}" \
             --from-literal=POSTGRES_USER="${{ secrets.POSTGRES_USER }}" \
             --from-literal=POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+            --from-literal=AZURE_STORAGE_CONNECTION_STRING="${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy Application

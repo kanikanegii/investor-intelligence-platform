@@ -15,6 +15,7 @@ from database.metrics import get_metrics
 from database.postgres_sql import create_database
 from database.create_table import create_tables
 from llm.azure_openai import get_async_openai_client
+from storage.blob_storage import get_blob_service_client
 from vectorstore.create_index import create_index
 from routes.health import router as health_router
 from routes.dashboard import router as dashboard_router
@@ -38,9 +39,11 @@ async def lifespan(app: FastAPI):
     instead of each request opening its own fresh connection pool (real,
     measurable latency, not just a style preference: every request would
     otherwise pay a full TCP/TLS handshake before even starting real work).
-    Ingestion doesn't share these: it runs via BackgroundTasks using the
-    existing sync clients, which have no equivalent per-request cost since
-    they're not on the request/response critical path.
+    Ingestion's own retrieval/extraction still uses separate sync clients
+    (it runs via BackgroundTasks, off the request/response critical path,
+    so there's no equivalent per-request cost to avoid there) -- but the
+    Blob Storage client below is shared with the upload route directly,
+    since that request-time write benefits from the same connection reuse.
     """
     create_database()
     create_tables()
@@ -65,11 +68,13 @@ async def lifespan(app: FastAPI):
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
         api_key=os.environ["AZURE_OPENAI_API_KEY"],
     )
+    app.state.blob_service_client = get_blob_service_client()
 
     yield
 
     await app.state.async_openai_client.close()
     await app.state.async_search_client.close()
+    await app.state.blob_service_client.close()
 
 
 app = FastAPI(
