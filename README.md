@@ -2,76 +2,90 @@
 
 <img width="2560" height="1638" alt="AI-Powered Investor Intelligence Platform dashboard" src="docs/dashboard-screenshot.png" />
 
-This repository contains the Python backend for an AI-powered Investor Intelligence Platform, including document ingestion, semantic search, KPI extraction, Azure AI Search integration, Azure OpenAI integration, and PostgreSQL-based KPI storage.
+An AI-powered platform that ingests corporate annual reports (10-Ks), extracts structured financial KPIs with verifiable citations, and answers investor questions through a RAG-based chatbot — all backed by Azure OpenAI, Azure AI Search, and PostgreSQL.
 
-## Prerequisites
+Live at: **https://investor-ai-platform.site**
 
-* Python 3.12+
-* UV Package Manager
+---
 
-## Setup
+## Technology Stack
+
+### Backend
+* FastAPI (async-native on the chat request path), Python 3.12, Uvicorn
+* SQLAlchemy + psycopg2 (Azure Database for PostgreSQL — Flexible Server)
+
+### AI / RAG
+* **Azure OpenAI** — chat completions (structured outputs via the OpenAI SDK), `text-embedding-3-small` embeddings
+* **Azure AI Search** — hybrid vector + keyword + semantic search index
+* Retrieval pipeline: multi-query expansion → HyDE (KPI extraction path) → hybrid retrieval → cross-encoder reranking (`sentence-transformers`) → auto-merge to parent pages → LLM context compression
+* **RAGAS** — both an offline golden-dataset evaluation harness and async, non-blocking live-chat quality scoring (faithfulness, answer relevancy)
+
+### Auth
+* **Microsoft Entra ID** — JWT validation (JWKS) gating the API, **MSAL.js** for browser sign-in on the dashboard, role-based access (`Analyst.Read`, `Ingestion.Write`)
+
+### Storage
+* **Azure Blob Storage** — durable persistence for uploaded source PDFs (local disk is ephemeral in AKS)
+* **PDF processing** — `pymupdf4llm`
+
+### Frontend
+* Server-rendered dashboard (Jinja2 + vanilla JS), real-time ingestion progress and chat
+
+### Infrastructure & Deployment
+* Docker (multi-architecture build — see Deployment below), Azure Kubernetes Service (AKS), Azure Container Registry (ACR)
+* `ingress-nginx` + `cert-manager` (Let's Encrypt) for TLS, Azure DNS
+* GitHub Actions CI/CD
+
+---
+
+## How It Works, End to End
+
+**1. Upload** — A signed-in user drags a PDF onto the dashboard. The browser uploads it to `/api/upload` (Entra-authenticated); the server writes it to local disk *and* Azure Blob Storage (the durable copy), then hands off to a background ingestion job and returns immediately.
+
+**2. Ingestion pipeline** (real-time progress shown in the UI):
+   1. **Convert** — PDF → Markdown (`pymupdf4llm`)
+   2. **Chunk & embed** — semantic chunking, embedded via Azure OpenAI
+   3. **Index** — uploaded to Azure AI Search (idempotent: content-hash based, skips unchanged chunks, supersedes older filings for the same company/year)
+   4. **Extract KPIs** — the retrieval pipeline pulls relevant context, and an LLM extracts revenue, net income, risk factors, growth drivers, etc. as structured data, each field citation-linked back to its exact source chunk/page (hallucinated citations are dropped, not trusted)
+   5. **Save** — results written to PostgreSQL
+
+**3. Chat** — A question comes in, the async retrieval pipeline runs (query expansion + hybrid search + reranking + compression, all parallelized), the LLM answers grounded in the retrieved context, and the response is returned. Afterward, a background task scores the answer's faithfulness/relevancy via RAGAS — logged for observability, never blocking the response.
+
+**4. Dashboard** — Displays the latest KPIs per company/year, pulled straight from PostgreSQL.
+
+---
+
+## Local Setup
 
 ### 1. Install UV
 
-#### Windows
-
+**Windows**
 ```bash
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-#### macOS/Linux
-
+**macOS/Linux**
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Verify installation:
-
-```bash
-uv --version
-```
-
----
-
-### 2. Create Virtual Environment
+### 2. Create and activate a virtual environment
 
 ```bash
 uv venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 ```
 
----
-
-### 3. Activate Virtual Environment
-
-#### Windows
-
-```bash
-.venv\Scripts\activate
-```
-
-#### macOS/Linux
-
-```bash
-source .venv/bin/activate
-```
-
----
-
-### 4. Install Dependencies
+### 3. Install dependencies
 
 ```bash
 uv pip install -r requirements.txt
 ```
 
----
+### 4. Configure environment variables
 
-### 5. Configure Environment Variables
+Create a `.env` file with the required Azure OpenAI / AI Search / Postgres / Entra / Blob Storage variables (see `.env.example`).
 
-Create a `.env` file and configure all required environment variables before running the application.
-
----
-
-### 6. Run the Application
+### 5. Run
 
 ```bash
 python main.py
@@ -79,111 +93,35 @@ python main.py
 
 ---
 
-## Project Features
+## Deployment
 
-* Annual Report Upload & Processing
-* KPI Extraction using Azure OpenAI
-* Azure AI Search Integration
-* Semantic Search & Retrieval
-* RAG-based Chatbot
-* PostgreSQL KPI Storage
-* Investor Insights Dashboard
-* Production-Grade Modular Architecture
+Push to `main` triggers `.github/workflows/deploy.yaml`, which builds and deploys the app to AKS end to end:
 
----
+1. **Azure login** (service principal via `AZURE_CREDENTIALS`)
+2. **ACR login** — currently via admin credentials, not RBAC (a `ClusterIssuer`-style RBAC migration was attempted and found blocked by an Azure-side ACR token-service issue unrelated to our config; admin creds are the working path)
+3. **Build & push the image** — `docker buildx build --platform linux/arm64 ... --push`. This project's AKS node pool runs **arm64** (Azure Ampere nodes), while GitHub's runners are amd64 — QEMU + Buildx cross-build for the correct target architecture; a plain `docker build` here would silently produce an incompatible image
+4. **Get AKS credentials**, then create/update the `invint-secrets` Kubernetes Secret from GitHub Actions secrets
+5. **Apply manifests** — `k8s/deployment.yaml`, `k8s/service.yaml` (`ClusterIP` — `ingress-nginx` is the cluster's single public entry point, not a per-service LoadBalancer), `k8s/cluster-issuer.yaml` (Let's Encrypt via `cert-manager`), `k8s/ingress.yaml` (TLS + routing for the custom domain)
+6. **Restart and verify the rollout**
 
-## Technology Stack
+Required GitHub Actions secrets: `AZURE_CREDENTIALS`, `ACR_NAME`, `ACR_LOGIN_SERVER`, `ACR_USERNAME`, `ACR_PASSWORD`, `AKS_RESOURCE_GROUP`, `AKS_CLUSTER_NAME`, plus the application's Azure OpenAI / AI Search / Postgres / Entra / Blob Storage variables — one `--from-literal` per app secret in the workflow's *Create Kubernetes Secrets* step.
 
-### Backend
-
-* FastAPI
-* Python 3.12
-
-### AI Services
-
-* Azure OpenAI
-* Azure AI Search
-
-### Database
-
-* Azure PostgreSQL
-
-### Deployment
-
-* Docker
-* Azure Container Registry (ACR)
-* Azure Kubernetes Service (AKS)
-
-### Package Management
-
-* UV
-
----
-
-## Deploying to AKS
-
-### Option A: Automated (CI/CD)
-
-Pushing to the `cicd-setup` branch triggers [.github/workflows/deploy.yaml](.github/workflows/deploy.yaml), which:
-
-1. Builds the Docker image from this repo.
-2. Pushes it to Azure Container Registry (ACR).
-3. Applies `k8s/deployment.yaml` and `k8s/service.yaml` to AKS.
-4. Restarts the deployment and waits for the rollout to finish.
-
-To deploy this way:
+### Manual deploy (fallback)
 
 ```bash
-git add .
-git commit -m "your change"
-git push origin <your-branch>:cicd-setup
-```
-
-This requires the following GitHub Actions secrets to already be configured on the repo (`AZURE_CREDENTIALS`, `ACR_NAME`, `ACR_LOGIN_SERVER`, `ACR_USERNAME`, `ACR_PASSWORD`, `AKS_RESOURCE_GROUP`, `AKS_CLUSTER_NAME`, plus the app's Azure OpenAI/Search/Postgres secrets) — see [CICD_Deployment_Guide.md](CICD_Deployment_Guide.md) for what each one is for.
-
-### Option B: Manual
-
-```bash
-# 1. Build the image
-docker build -t <acr-login-server>/invint:latest .
-
-# 2. Log in and push to ACR
 az acr login --name <acr-name>
-docker push <acr-login-server>/invint:latest
+docker buildx build --platform linux/arm64 -t <acr-login-server>/invint:latest --push .
 
-# 3. Point kubectl at the AKS cluster
 az aks get-credentials --resource-group <resource-group> --name <cluster-name>
 
-# 4. Deploy
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-
-# 5. Roll out the new image
+kubectl apply -f k8s/deployment.yaml -f k8s/service.yaml -f k8s/cluster-issuer.yaml -f k8s/ingress.yaml
 kubectl rollout restart deployment/invint
 kubectl rollout status deployment/invint
 ```
-
-`k8s/deployment.yaml` pulls app config/secrets from a Kubernetes secret named `invint-secrets` — create it before the first deploy:
-
-```bash
-kubectl create secret generic invint-secrets \
-  --from-literal=AZURE_OPENAI_ENDPOINT="<value>" \
-  --from-literal=AZURE_OPENAI_API_KEY="<value>" \
-  --from-literal=AZURE_SEARCH_ENDPOINT="<value>" \
-  --from-literal=AZURE_SEARCH_API_KEY="<value>" \
-  --from-literal=POSTGRES_HOST="<value>" \
-  --from-literal=POSTGRES_USER="<value>" \
-  --from-literal=POSTGRES_PASSWORD="<value>"
-  # ...and any other vars from .env.example
-```
-
-For a full field-by-field breakdown of `deployment.yaml`, `service.yaml`, and the workflow, see [CICD_Deployment_Guide.md](CICD_Deployment_Guide.md).
 
 ---
 
 ## Notes
 
-* Ensure all Azure resources are configured before running the application.
-* Verify that PostgreSQL firewall rules allow access from the application.
-* Store secrets in environment variables and never commit `.env` files to source control.
-* For production deployments, use Azure Key Vault or Kubernetes Secrets for secret management.
+* Store secrets in environment variables / Kubernetes Secrets — never commit `.env` files.
+* PostgreSQL access is currently IP-firewall based, not VNet-integrated — see the project's internal notes for the reasoning and a safe hands-on lab for practicing the migration.

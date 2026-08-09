@@ -58,7 +58,9 @@ credentials.json
 evaluation/reports/*
 !evaluation/reports/.gitkeep
 
-# Docs: keep only README.md and CICD_Deployment_Guide.md at repo root
+# Docs: keep only README.md at repo root
 /*.md
 !/README.md
-!/CICD_Deployment_Guide.md
+
+# Local planning/design artifacts -- not pushed
+/notes/
