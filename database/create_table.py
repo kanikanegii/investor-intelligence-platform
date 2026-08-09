@@ -58,10 +58,18 @@ def create_tables() -> None:
     ALTER TABLE ingested_documents ADD COLUMN IF NOT EXISTS superseded_by VARCHAR(255);
     """
 
+    # Tracks which pipeline step an in-flight ingestion is currently on, so
+    # the dashboard can show real stage-based progress instead of a fake
+    # ticking animation (see database/ingestion_log.py's STAGES list).
+    add_stage_column_query = """
+    ALTER TABLE ingested_documents ADD COLUMN IF NOT EXISTS stage VARCHAR(30);
+    """
+
     with engine.begin() as connection:
         connection.execute(text(financial_metrics_query))
         connection.execute(text(add_citations_column_query))
         connection.execute(text(ingested_documents_query))
         connection.execute(text(add_superseded_by_column_query))
+        connection.execute(text(add_stage_column_query))
 
     logger.info("financial_metrics and ingested_documents tables created.")

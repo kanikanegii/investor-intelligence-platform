@@ -6,7 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Request, UploadFi
 from langchain_openai import AzureOpenAIEmbeddings
 
 from auth.entra import require_role
-from database.ingestion_log import get_ingestion_record
+from database.ingestion_log import get_ingestion_record, stage_percent
 from ingestion.ingest_documents import ingest_document
 from storage.blob_storage import upload_pdf
 from vectorstore.azure_ai_search import AzureAISearchVectorStore
@@ -93,16 +93,20 @@ async def upload_status(
     that response is already sent. A caller that wants to know the real
     outcome (as opposed to just assuming success after some fixed delay,
     which is what the dashboard used to do) should poll this endpoint by
-    file_name until status is no longer "not_found".
+    file_name until status is "succeeded" or "failed". `percent` is a
+    fixed-stage approximation (see database.ingestion_log.STAGES), not a
+    byte-level/granular progress value.
     """
     record = get_ingestion_record(file_name)
 
     if record is None:
-        return {"file_name": file_name, "status": "not_found"}
+        return {"file_name": file_name, "status": "not_found", "percent": 0}
 
     return {
         "file_name": file_name,
         "status": record["status"],
+        "stage": record["stage"],
+        "percent": stage_percent(record["stage"], record["status"]),
         "company": record["company"],
         "year": record["year"],
         "error_message": record["error_message"],

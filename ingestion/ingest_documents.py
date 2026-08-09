@@ -6,7 +6,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 from langchain_openai import AzureOpenAIEmbeddings
 
-from database.ingestion_log import get_active_documents, get_ingestion_record, mark_superseded, record_ingestion
+from database.ingestion_log import (
+    STAGES,
+    get_active_documents,
+    get_ingestion_record,
+    mark_superseded,
+    record_ingestion,
+    start_ingestion,
+    update_stage,
+)
 from database.save_metrics import save_metrics
 from ingestion.pdf_to_markdown import PDFToMarkdownConverter
 from ingestion.semantic_chunker import chunk_pages
@@ -75,13 +83,16 @@ def ingest_document(
             return
 
     logger.info("Ingesting %s as company=%r, year=%r", pdf_file.name, company, year)
+    start_ingestion(source_file=pdf_file.name, pdf_hash=pdf_hash, company=company, year=year)
 
     try:
+        update_stage(pdf_file.name, STAGES[0])  # converting_pdf
         converter = PDFToMarkdownConverter()
         pages = converter.convert_pdf_pages(pdf_path)
         # Also write the flat markdown file for human inspection/debugging.
         converter.convert_pdf(pdf_path=pdf_path, output_dir="data/markdown")
 
+        update_stage(pdf_file.name, STAGES[1])  # chunking_embedding
         chunks = chunk_pages(
             pages=pages,
             embeddings=embeddings,
@@ -92,6 +103,7 @@ def ingest_document(
 
         logger.info("Generated %d chunks for %s", len(chunks), pdf_file.name)
 
+        update_stage(pdf_file.name, STAGES[2])  # uploading_to_search
         # Reconcile against whatever's already indexed for this exact
         # filename: skip re-embedding chunks whose content is unchanged,
         # and mark stale any old chunk_id no longer produced (e.g. the
@@ -117,6 +129,7 @@ def ingest_document(
             mark_superseded(old_source_file, superseded_by=pdf_file.name)
             logger.info("Superseded %s with %s", old_source_file, pdf_file.name)
 
+        update_stage(pdf_file.name, STAGES[3])  # extracting_kpis
         retriever = Retriever(vector_store.client, embeddings)
         metrics = extract_financial_metrics(
             retriever=retriever,
@@ -124,6 +137,7 @@ def ingest_document(
             year=int(year) if year.isdigit() else None,
         )
 
+        update_stage(pdf_file.name, STAGES[4])  # saving
         if metrics:
             save_metrics(
                 company=company,

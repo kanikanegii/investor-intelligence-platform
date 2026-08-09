@@ -637,12 +637,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Human-readable labels for database.ingestion_log.STAGES -- keep in
+    // sync with that list if stages are ever added/renamed there.
+    const STAGE_LABELS = {
+        converting_pdf: 'Converting PDF...',
+        chunking_embedding: 'Chunking & embedding...',
+        uploading_to_search: 'Indexing chunks...',
+        extracting_kpis: 'Extracting KPIs...',
+        saving: 'Saving results...',
+    };
+
     // Polls /api/upload/status/<file_name> until ingestion reaches a
     // terminal state (succeeded/failed) or the polling window runs out.
-    // Returns the last known status object either way -- callers decide
-    // what "still processing/unknown" should mean to the user, this
-    // function just stops guessing after a reasonable amount of time.
-    async function pollIngestionStatus(fileName, token, { intervalMs = 3000, maxAttempts = 40 } = {}) {
+    // Calls onUpdate(data) on every poll (not just the terminal one) so the
+    // caller can drive a real, stage-based progress bar instead of a fake
+    // ticking animation. Returns the last known status object either way --
+    // callers decide what "still processing/unknown" should mean to the
+    // user, this function just stops guessing after a reasonable amount of
+    // time.
+    async function pollIngestionStatus(fileName, token, onUpdate, { intervalMs = 3000, maxAttempts = 40 } = {}) {
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             await new Promise(resolve => setTimeout(resolve, intervalMs));
 
@@ -653,6 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!response.ok) continue;
 
                 const data = await response.json();
+                onUpdate(data);
                 if (data.status === 'succeeded' || data.status === 'failed') {
                     return data;
                 }
@@ -704,23 +718,23 @@ document.addEventListener("DOMContentLoaded", () => {
             if (xhr.status >= 200 && xhr.status < 300) {
                 progressBarFill.style.width = '75%';
                 progressPercent.textContent = '75%';
-                progressStatus.textContent = 'Extracting KPIs...';
-
-                let extractProgress = 75;
-                const interval = setInterval(() => {
-                    if (extractProgress < 95) {
-                        extractProgress += 1;
-                        progressBarFill.style.width = `${extractProgress}%`;
-                        progressPercent.textContent = `${extractProgress}%`;
-                    }
-                }, 1000);
+                progressStatus.textContent = 'Starting ingestion...';
 
                 // The upload response only confirms the file was *accepted*
-                // -- the real pipeline (chunk/embed/extract) runs in the
-                // background after this. Poll the actual outcome instead of
-                // assuming success after a fixed delay.
-                const outcome = await pollIngestionStatus(file.name, token);
-                clearInterval(interval);
+                // -- the real pipeline (convert/chunk/embed/extract/save)
+                // runs in the background after this. Poll the actual
+                // per-stage outcome instead of assuming success after a
+                // fixed delay -- percent/stage come from the backend's real
+                // pipeline position (database.ingestion_log.STAGES), not a
+                // client-side guess.
+                const outcome = await pollIngestionStatus(file.name, token, (data) => {
+                    const percent = Math.max(75, data.percent ?? 75);
+                    progressBarFill.style.width = `${percent}%`;
+                    progressPercent.textContent = `${percent}%`;
+                    if (data.stage && STAGE_LABELS[data.stage]) {
+                        progressStatus.textContent = STAGE_LABELS[data.stage];
+                    }
+                });
                 progressBarFill.style.width = '100%';
                 progressPercent.textContent = '100%';
 

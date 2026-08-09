@@ -2,6 +2,29 @@ from sqlalchemy import text
 
 from database.postgres_sql import get_engine
 
+# Ordered pipeline steps, used to derive a fixed-percentage progress bar for
+# an in-flight ingestion (see routes/ingestion.py's status endpoint). Not a
+# byte-level/granular progress -- each stage is one jump, e.g. 5 stages ==
+# ~20% per completed stage.
+STAGES = [
+    "converting_pdf",
+    "chunking_embedding",
+    "uploading_to_search",
+    "extracting_kpis",
+    "saving",
+]
+
+
+def stage_percent(stage: str | None, status: str | None) -> int:
+    """Map a (stage, status) pair to a 0-100 progress value for the UI."""
+    if status == "succeeded":
+        return 100
+    if status == "failed":
+        return 0
+    if stage in STAGES:
+        return round((STAGES.index(stage) / len(STAGES)) * 100)
+    return 0
+
 
 def get_ingestion_record(source_file: str) -> dict | None:
     """
@@ -11,12 +34,13 @@ def get_ingestion_record(source_file: str) -> dict | None:
         source_file: Original PDF filename.
 
     Returns:
-        The record as a dict (pdf_hash, status, etc.), or None if never ingested.
+        The record as a dict (pdf_hash, status, stage, etc.), or None if
+        never ingested.
     """
     engine = get_engine()
 
     query = """
-    SELECT source_file, pdf_hash, company, year, status, error_message, ingested_at
+    SELECT source_file, pdf_hash, company, year, status, stage, error_message, ingested_at
     FROM ingested_documents
     WHERE source_file = :source_file
     """
@@ -28,6 +52,62 @@ def get_ingestion_record(source_file: str) -> dict | None:
     return dict(row._mapping) if row else None
 
 
+def start_ingestion(source_file: str, pdf_hash: str, company: str, year: str) -> None:
+    """
+    Record that ingestion has begun for a source file, before any pipeline
+    stage has actually completed.
+
+    Called at the very start of ingest_document(), so a status check made
+    immediately after /upload returns 202 sees "processing" rather than
+    "not_found" for the (often multi-second) gap before the first real
+    stage transition.
+    """
+    engine = get_engine()
+
+    query = """
+    INSERT INTO ingested_documents (source_file, pdf_hash, company, year, status, stage, error_message, ingested_at)
+    VALUES (:source_file, :pdf_hash, :company, :year, 'processing', :stage, NULL, CURRENT_TIMESTAMP)
+    ON CONFLICT (source_file) DO UPDATE SET
+        pdf_hash = EXCLUDED.pdf_hash,
+        company = EXCLUDED.company,
+        year = EXCLUDED.year,
+        status = EXCLUDED.status,
+        stage = EXCLUDED.stage,
+        error_message = EXCLUDED.error_message,
+        ingested_at = EXCLUDED.ingested_at
+    """
+
+    with engine.begin() as connection:
+        connection.execute(
+            text(query),
+            {
+                "source_file": source_file,
+                "pdf_hash": pdf_hash,
+                "company": company,
+                "year": year,
+                "stage": STAGES[0],
+            },
+        )
+
+
+def update_stage(source_file: str, stage: str) -> None:
+    """
+    Advance the in-flight progress marker for a source file already started
+    via start_ingestion(). Lightweight, targeted UPDATE -- doesn't touch
+    status/error_message, called once per pipeline stage transition.
+    """
+    engine = get_engine()
+
+    query = """
+    UPDATE ingested_documents
+    SET stage = :stage
+    WHERE source_file = :source_file
+    """
+
+    with engine.begin() as connection:
+        connection.execute(text(query), {"source_file": source_file, "stage": stage})
+
+
 def record_ingestion(
     source_file: str,
     pdf_hash: str,
@@ -37,7 +117,7 @@ def record_ingestion(
     error_message: str | None = None,
 ) -> None:
     """
-    Upsert the ingestion record for a source file.
+    Upsert the terminal ingestion record for a source file.
 
     Args:
         source_file: Original PDF filename (primary key).
@@ -49,14 +129,20 @@ def record_ingestion(
     """
     engine = get_engine()
 
+    # stage mirrors status on the terminal call -- stage_percent() maps
+    # status == "succeeded"/"failed" directly to 100/0 regardless of the
+    # stage value, but setting it here too keeps the column meaningful if
+    # ever inspected directly (e.g. in the DB) rather than left on
+    # whatever the last in-flight stage happened to be.
     query = """
-    INSERT INTO ingested_documents (source_file, pdf_hash, company, year, status, error_message, ingested_at)
-    VALUES (:source_file, :pdf_hash, :company, :year, :status, :error_message, CURRENT_TIMESTAMP)
+    INSERT INTO ingested_documents (source_file, pdf_hash, company, year, status, stage, error_message, ingested_at)
+    VALUES (:source_file, :pdf_hash, :company, :year, :status, :status, :error_message, CURRENT_TIMESTAMP)
     ON CONFLICT (source_file) DO UPDATE SET
         pdf_hash = EXCLUDED.pdf_hash,
         company = EXCLUDED.company,
         year = EXCLUDED.year,
         status = EXCLUDED.status,
+        stage = EXCLUDED.stage,
         error_message = EXCLUDED.error_message,
         ingested_at = EXCLUDED.ingested_at
     """
