@@ -1,5 +1,7 @@
 **==> picture [502 x 613] intentionally omitted <==**
 
+
+
 Dear shareholders, colleagues, customers, and partners: 
 
 Fiscal year 2024 was a pivotal year for Microsoft. We entered our 50th year as a company and the second year of the AI platform shift. With these milestones, I’ve found myself reflecting on how Microsoft has remained a consequential company decade after decade in an industry with no franchise value. And I realize that it’s because—time and time again, when tech paradigms have shifted—we have seized the opportunity to reinvent ourselves to stay relevant to our customers, our partners, and our employees. And that’s what we are doing again today. 
@@ -36,6 +38,8 @@ There are three capabilities coming together because of these scaling laws. Firs
 
 1 
 
+
+
 reasoning and planning capabilities that help us understand complex context, complete end-to-end tasks on our behalf, and reduce our cognitive load. 
 
 This new world is being defined by a rich tapestry of AI agents, which can take action on our behalf, including personal agents across work and life, business process agents, and cross-organizational ones. These agents will be able to work in concert as a new input to help make small businesses more productive, make multinationals more competitive, make the public sector more efficient, and improve health and education outcomes broadly. 
@@ -65,6 +69,8 @@ AI does not get created without data. At the data layer, we are fundamentally re
 From GitHub to Visual Studio, we have the most comprehensive developer tools. GitHub Copilot had a breakout year, as it became standard issue for developers in every industry. We now have more than 1.8 million paid subscribers and over 77,000 enterprise customers, up 180 percent year-over-year. They are realizing productivity gains of up to 55 percent while 
 
 2 
+
+
 
 staying in their flow and bringing the joy back to coding. This year, we also introduced Copilot Workspace, a Copilot-native developer environment, which helps any developer go from idea, to code, to software—all in natural language. 
 
@@ -96,6 +102,8 @@ We are continuously applying what we are learning and translating it into securi
 
 3 
 
+
+
 skills informed by our threat intelligence and 78 trillion daily security signals to provide security teams with actionable insights. 
 
 ## _Devices & creativity_ 
@@ -126,6 +134,8 @@ We always say Microsoft will do well only if the world around us does well. And 
 
 4 
 
+
+
 ## _How can we expand opportunity?_ 
 
 We are democratizing access to AI and the skills needed to harness its potential, ensuring that every person, organization, and community can benefit from the opportunities AI brings. 
@@ -153,6 +163,8 @@ Finally, we continue our work to create safe experiences online and protect cust
 We are committed to protecting fundamental rights—extending the benefits of technology while mitigating its potential harms. For us, this means promoting responsible business practices, expanding connectivity and accessibility, protecting democracy, and advancing a fair and inclusive society. 
 
 5 
+
+
 
 Over the past year, as regulators increasingly required greater transparency and process consistency across corporate supply chains and human rights efforts, we ensured compliance with reporting and due diligence directives. Going forward, we’ll continue to respect global human rights and laws and take steps to mitigate the impact of our operations and our technology on the people in our value chain. 
 
@@ -186,6 +198,8 @@ Just as our culture has been critical in getting us to this point, it will be cr
 
 6 
 
+
+
 capability, we need a culture that allows us to grow that capability long before it is conventional wisdom. For us, that means constantly exercising our growth mindset and confronting our fixed mindset—each one of us, every day. It is the only way we will succeed. 
 
 Our growth mindset culture helps us in our continuous pursuit of high performance. It doesn’t matter what we said about our culture 10 years ago or even last year if we aren’t practicing it today—by anticipating the unmet and unarticulated needs of customers; by working together as One Microsoft to deliver the best end-to-end solutions and services; and by actively seeking diversity and embracing inclusion—to ensure our workforce represents the planet we serve and the products we build always meet our customers’ needs. In our latest Diversity & Inclusion Report, we share the ways our longstanding commitment to diversity and inclusion endures, and what we’re learning as we continue to hire, develop, and grow a global workforce that best supports each other and our customers. This is how we thrive—as individuals, as teams, and as an organization. And, when we thrive, we can help our customers and the world thrive too. 
@@ -211,6 +225,8 @@ It is not an exaggeration to say that what each of us does right now with the un
 Satya Nadella Chairman and Chief Executive Officer October 18, 2024 
 
 7 
+
+
 
 ## **ISSUER PURCHASES OF EQUITY SECURITIES, DIVIDENDS, AND STOCK PERFORMANCE** 
 
@@ -255,6 +271,8 @@ The dividend declared on June 12, 2024 was included in other current liabilities
 
 8 
 
+
+
 ## STOCK PERFORMANCE 
 
 ## **COMPARISON OF 5 YEAR CUMULATIVE TOTAL RETURN*** 
@@ -274,6 +292,8 @@ Among Microsoft Corporation, the S&P 500 Index and the NASDAQ Computer Index
 * $100 invested on 6/30/19 in stock or index, including reinvestment of dividends. Fiscal year ending June 30. 
 
 9 
+
+
 
 ## _**More Personal Computing**_ 
 
@@ -324,6 +344,8 @@ Cost of revenue increased $8.3 billion or 13% driven by growth in Microsoft Clou
 
 30 
 
+
+
 Gross margin increased $25.0 billion or 17% driven by growth across each of our segments. 
 
 - Gross margin percentage increased slightly. Excluding the impact of the change in accounting estimate for the useful lives of our server and network equipment, gross margin percentage increased 2 points driven by improvement in More Personal Computing. 
@@ -365,6 +387,8 @@ Revenue increased $8.5 billion or 12%.
 
 31 
 
+
+
 Operating income increased $6.4 billion or 19%. 
 
 - Gross margin increased $6.5 billion or 12% driven by growth in Office 365 Commercial. Gross margin percentage decreased slightly. Excluding the impact of the change in accounting estimate, gross margin percentage increased slightly driven by improvement in Office 365 Commercial. 
@@ -404,6 +428,8 @@ Operating income increased $2.9 billion or 17%.
 - Operating expenses increased $3.9 billion or 31% driven by Gaming, with 34 points of growth from the Activision Blizzard acquisition. 
 
 32 
+
+
 
 OPERATING EXPENSES 
 
@@ -457,6 +483,8 @@ General and administrative expenses increased slightly as growth from the Activi
 
 33 
 
+
+
 ## OTHER INCOME (EXPENSE), NET 
 
 The components of other income (expense), net were as follows: 
@@ -488,6 +516,8 @@ The mix of income before income taxes between the U.S. and foreign countries imp
 The Organisation for Economic Co-operation and Development (“OECD”) published its model rules “Tax Challenges Arising From the Digitalisation of the Economy – Global Anti-Base Erosion Model Rules (Pillar Two)” which established a global minimum corporate tax rate of 15% for certain multinational enterprises. Many countries have implemented or are in the process of implementing the Pillar Two legislation, which will apply to Microsoft beginning in fiscal year 2025. While we do not currently estimate a material impact to our consolidated financial statements, we continue to monitor the impact as countries implement legislation and the OECD provides additional guidance. 
 
 34 
+
+
 
 ## **Uncertain Tax Positions** 
 
@@ -522,6 +552,8 @@ We expect existing cash, cash equivalents, short-term investments, cash flows fr
 
 35 
 
+
+
 ## **Cash, Cash Equivalents, and Investments** 
 
 Cash, cash equivalents, and short-term investments totaled $75.5 billion and $111.3 billion as of June 30, 2024 and 2023, respectively. Equity and other investments were $14.6 billion and $9.9 billion as of June 30, 2024 and 2023, respectively. Our short-term investments are primarily intended to facilitate liquidity and capital preservation. They consist predominantly of highly liquid investment-grade fixed-income securities, diversified among industries and individual issuers. The investments are predominantly U.S. dollar-denominated securities, but also include foreign currency-denominated securities to diversify risk. Our fixed-income investments are exposed to interest rate risk and credit risk. The credit risk and average maturity of our fixed-income portfolio are managed to achieve economic returns that correlate to certain fixed-income indices. The settlement risk related to these investments is insignificant given that the short-term investments held are primarily highly liquid investment-grade fixed-income securities. 
@@ -545,6 +577,8 @@ We issue debt to take advantage of favorable pricing and liquidity in the debt m
 Unearned revenue comprises mainly unearned revenue related to volume licensing programs, which may include Software Assurance (“SA”) and cloud services. Unearned revenue is generally invoiced annually at the beginning of each contract period for multi-year agreements and recognized ratably over the coverage period. Unearned revenue also includes 
 
 36 
+
+
 
 payments for other offerings for which we have been paid in advance and earn the revenue when we transfer control of the product or service. Refer to Note 1 – Accounting Policies of the Notes to Financial Statements for further discussion. 
 
@@ -593,6 +627,8 @@ As a result of the TCJA, we are required to pay a one-time transition tax on def
 
 37 
 
+
+
 ## _**Share Repurchases**_ 
 
 During fiscal years 2024 and 2023, we repurchased 32 million shares and 69 million shares of our common stock for $12.0 billion and $18.4 billion, respectively, through our share repurchase program. All repurchases were made using cash resources. As of June 30, 2024, $10.3 billion remained of our $60 billion share repurchase program. Refer to Note 16 – Stockholders’ Equity of the Notes to Financial Statements for further discussion. 
@@ -621,6 +657,8 @@ Judgment is required to determine the standalone selling price (“SSP”) for e
 
 38 
 
+
+
 In instances where SSP is not directly observable, such as when we do not sell the product or service separately, we determine the SSP using information that may include market conditions and other observable inputs. We typically have more than one SSP for individual products and services due to the stratification of those products and services by customers and circumstances. In these instances, we may use information such as the size of the customer and geographic region in determining the SSP. 
 
 Due to the various benefits from and the nature of our SA program, judgment is required to assess the pattern of delivery, including the exercise pattern of certain benefits across our portfolio of customers. 
@@ -643,6 +681,8 @@ The estimates used to calculate the fair value of a reporting unit change from y
 
 39 
 
+
+
 ## **Research and Development Costs** 
 
 Costs incurred internally in researching and developing a computer software product are charged to expense until technological feasibility has been established for the product. Once technological feasibility is established, software costs are capitalized until the product is available for general release to customers. Judgment is required in determining when technological feasibility of a product is established. We have determined that technological feasibility for our software products is reached after all high-risk development issues have been resolved through coding and testing. Generally, this occurs shortly before the products are released to production. The amortization of these costs is included in cost of revenue over the estimated life of the products. 
@@ -661,6 +701,8 @@ Accounting for business combinations requires significant judgments when allocat
 
 40 
 
+
+
 ## **STATEMENT OF MANAGEMENT’S RESPONSIBILITY FOR FINANCIAL STATEMENTS** 
 
 Management is responsible for the preparation of the consolidated financial statements and related information that are presented in this report. The consolidated financial statements, which include amounts based on management’s estimates and judgments, have been prepared in conformity with accounting principles generally accepted in the United States of America. 
@@ -678,6 +720,8 @@ Amy E. Hood Executive Vice President and Chief Financial Officer
 Alice L. Jolla Corporate Vice President and Chief Accounting Officer 
 
 41 
+
+
 
 ## **QUANTITATIVE AND QUALITATIVE DISCLOSURES ABOUT MARKET RISK** 
 
@@ -720,6 +764,8 @@ The following table sets forth the potential loss in future earnings or fair val
 
 42 
 
+
+
 ## **FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA** 
 
 ## **INCOME STATEMENTS** 
@@ -742,6 +788,8 @@ Refer to accompanying notes.
 
 43 
 
+
+
 ## **COMPREHENSIVE INCOME STATEMENTS** 
 
 ## **(In millions)** 
@@ -758,6 +806,8 @@ Refer to accompanying notes.
 Refer to accompanying notes. 
 
 44 
+
+
 
 ## **BALANCE SHEETS** 
 
@@ -782,6 +832,8 @@ Refer to accompanying notes.
 
 45 
 
+
+
 ## **CASH FLOWS STATEMENTS** 
 
 ## **(In millions)** 
@@ -804,6 +856,8 @@ Refer to accompanying notes.
 
 46 
 
+
+
 ## **STOCKHOLDERS’ EQUITY STATEMENTS** 
 
 |**(In millions, except per share amounts)**||||
@@ -822,6 +876,8 @@ Refer to accompanying notes.
 Refer to accompanying notes. 
 
 47 
+
+
 
 ## **NOTES TO FINANCIAL STATEMENTS** 
 
@@ -857,6 +913,8 @@ Service and other revenue includes sales from cloud-based solutions that provide
 
 48 
 
+
+
 ## _**Revenue Recognition**_ 
 
 Revenue is recognized upon transfer of control of promised products or services to customers in an amount that reflects the consideration we expect to receive in exchange for those products or services. We enter into contracts that can include various combinations of products and services, which are generally capable of being distinct and accounted for as separate performance obligations. Revenue is recognized net of allowances for returns and any taxes collected from customers, which are subsequently remitted to governmental authorities. 
@@ -883,6 +941,8 @@ Judgment is required to determine the SSP for each distinct performance obligati
 
 49 
 
+
+
 additional charge. We use a range of amounts to estimate SSP when we sell each of the products and services separately and need to determine whether there is a discount to be allocated based on the relative SSP of the various products and services. 
 
 In instances where SSP is not directly observable, such as when we do not sell the product or service separately, we determine the SSP using information that may include market conditions and other observable inputs. We typically have more than one SSP for individual products and services due to the stratification of those products and services by customers and circumstances. In these instances, we may use information such as the size of the customer and geographic region in determining the SSP. 
@@ -906,6 +966,8 @@ As of June 30, 2024 and 2023, long-term accounts receivable, net of allowance fo
 The allowance for doubtful accounts reflects our best estimate of probable losses inherent in the accounts receivable balance. We determine the allowance based on known troubled accounts, historical experience, and other currently available evidence. 
 
 50 
+
+
 
 Activity in the allowance for doubtful accounts was as follows: 
 
@@ -945,6 +1007,8 @@ We provide for the estimated costs of fulfilling our obligations under hardware 
 
 51 
 
+
+
 include parts and labor over a period generally ranging from 90 days to three years. For software warranties, we estimate the costs to provide bug fixes, such as security patches, over the estimated life of the software. We regularly reevaluate our estimates to assess the adequacy of the recorded warranty liabilities and adjust the amounts as necessary. 
 
 ## **Research and Development** 
@@ -975,6 +1039,8 @@ Debt investments are classified as available-for-sale and realized gains and los
 
 52 
 
+
+
 credit losses, we employ a systematic methodology that considers available quantitative and qualitative evidence. In addition, we consider specific adverse conditions related to the financial health of, and business outlook for, the investee. If we have plans to sell the security or it is more likely than not that we will be required to sell the security before recovery, then a decline in fair value below cost is recorded as an impairment charge in other income (expense), net and a new cost basis in the investment is established. If market, industry, and/or investee conditions deteriorate, we may incur future impairments. 
 
 Equity investments with readily determinable fair values are measured at fair value. Equity investments without readily determinable fair values are measured using the equity method or measured at cost with adjustments for observable changes in price or impairments (referred to as the measurement alternative). We perform a qualitative assessment on a periodic basis and recognize an impairment if there are sufficient indicators that the fair value of the investment is less than carrying value. Changes in value are recorded in other income (expense), net. 
@@ -1000,6 +1066,8 @@ We account for certain assets and liabilities at fair value. The hierarchy below
 - _Level 2_ – inputs are based upon quoted prices for similar instruments in active markets, quoted prices for identical or similar instruments in markets that are not active, and model-based valuation techniques (e.g. the Black-Scholes model) for which all significant inputs are observable in the market or can be corroborated by observable market data for substantially the full term of the assets or liabilities. Where applicable, these models project future cash flows and discount the future amounts to a present value using market-based observable inputs including interest rate curves, credit spreads, foreign exchange rates, and forward and spot prices for currencies. Our Level 2 investments include commercial paper, certificates of deposit, U.S. agency securities, foreign government bonds, mortgage- and asset-backed securities, corporate notes and bonds, and municipal securities. Our Level 2 derivative assets and liabilities include certain cleared swap contracts and over-thecounter forward, option, and swap contracts. 
 
 53 
+
+
 
 - _Level 3_ – inputs are generally unobservable and typically reflect management’s estimates of assumptions that market participants would use in pricing the asset or liability. The fair values are therefore determined using model-based techniques, including option pricing models and discounted cash flow models. Our Level 3 assets and liabilities include investments in corporate notes and bonds, municipal securities, and goodwill and intangible assets, when they are recorded at fair value due to an impairment charge. Unobservable inputs used in the models are significant to the fair values of the assets and liabilities. 
 
@@ -1029,6 +1097,8 @@ Goodwill is tested for impairment at the reporting unit level (operating segment
 
 54 
 
+
+
 ## **Intangible Assets** 
 
 Our intangible assets are subject to amortization and are amortized over the estimated useful life in proportion to the economic benefits received. We evaluate the recoverability of intangible assets periodically by taking into account events or circumstances that may warrant revised estimates of useful lives or that indicate the asset may be impaired. 
@@ -1048,6 +1118,8 @@ In November 2023, the Financial Accounting Standards Board (“FASB”) issued a
 In December 2023, the FASB issued a new standard to improve income tax disclosures. The guidance requires disclosure of disaggregated income taxes paid, prescribes standardized categories for the components of the effective tax rate reconciliation, and modifies other income tax-related disclosures. The standard will be effective for us beginning with our annual reporting for fiscal year 2026, with early adoption permitted. We are currently evaluating the impact of this standard on our income tax disclosures. 
 
 55 
+
+
 
 NOTE 2 — EARNINGS PER SHARE 
 
@@ -1092,6 +1164,8 @@ Net recognized gains (losses) on debt investments were as follows:
 
 56 
 
+
+
 Net recognized gains (losses) on equity investments were as follows: 
 
 **(In millions)** 
@@ -1122,6 +1196,8 @@ The components of investments were as follows:
 
 57 
 
+
+
 |**(In millions)**<br>**Fair Value**<br>**Level**|**Adjusted**<br>**Cost Basis**<br>**Unrealized**<br>**Gains**<br>**Unrealized**<br>**Losses**<br>**Recorded**<br>**Basis**<br>**Cash and**<br>**Cash**<br>**Equivalents**<br>**Short-term**<br>**Investments**<br>**Equity and**<br>**Other**<br>**Investments**|**Adjusted**<br>**Cost Basis**<br>**Unrealized**<br>**Gains**<br>**Unrealized**<br>**Losses**<br>**Recorded**<br>**Basis**<br>**Cash and**<br>**Cash**<br>**Equivalents**<br>**Short-term**<br>**Investments**<br>**Equity and**<br>**Other**<br>**Investments**|
 |---|---|---|
 |**June 30, 2023**<br>**Changes in Fair Value Recorded in**<br>**Other Comprehensive Income**<br>Commercial paper<br>Level 2<br>Certificates of deposit<br>Level 2<br>U.S. government<br>securities<br>Level 1<br>U.S. agency securities<br>Level 2<br>Foreign government<br>bonds<br>Level 2<br>Mortgage- and asset-<br>backed securities<br>Level 2<br>Corporate notes and<br>bonds<br>Level 2<br>Corporate notes and<br>bonds<br>Level 3<br>Municipal securities<br>Level 2<br>Municipal securities<br>Level 3|$ 16,589  $ 0 $ 0  $ 16,589 $ 12,231  $ 4,358  $ 0<br> <br>2,701<br>0<br>0<br>2,701<br>2,657<br>44<br>0<br> <br>65,237<br>2<br>(3,870)<br>61,369<br>2,991<br>58,378<br>0<br> <br>2,703<br>0<br>0<br>2,703<br>894<br>1,809<br>0<br> <br>498<br>1<br>(24)<br>475<br>0<br>475<br>0<br> <br>824<br>1<br>(39)<br>786<br>0<br>786<br>0<br> <br>10,809<br>8<br>(583)<br>10,234<br>0<br>10,234<br>0<br> <br>120<br>0<br>0<br>120<br>0<br>120<br>0<br> <br>285<br>1<br>(18)<br>268<br>7<br>261<br>0<br> <br>103<br>0<br>(16)<br>87<br>0<br>87<br>0||
@@ -1138,6 +1214,8 @@ The components of investments were as follows:
 Equity investments presented as “Other” in the tables above include investments without readily determinable fair values measured using the equity method or measured at cost with adjustments for observable changes in price or impairments, and investments measured at fair value using net asset value as a practical expedient which are not categorized in the fair value hierarchy. As of June 30, 2024 and 2023, equity investments without readily determinable fair values measured at cost with adjustments for observable changes in price or impairments were $3.9 billion and $4.2 billion, respectively. 
 
 58 
+
+
 
 ## **Unrealized Losses on Debt Investments** 
 
@@ -1174,6 +1252,8 @@ We use derivative instruments to manage risks related to foreign currencies, int
 
 59 
 
+
+
 ## **Foreign Currencies** 
 
 Certain forecasted transactions, assets, and liabilities are exposed to foreign currency risk. We monitor our foreign currency exposures daily to maximize the economic effectiveness of our foreign currency hedge positions. 
@@ -1201,6 +1281,8 @@ Our fixed-income portfolio is diversified and consists primarily of investment-g
 Certain counterparty agreements for derivative instruments contain provisions that require our issued and outstanding longterm unsecured debt to maintain an investment grade credit rating and require us to maintain minimum liquidity of $1.0 billion. To the extent we fail to meet these requirements, we will be required to post collateral, similar to the standard convention related to over-the-counter derivatives. As of June 30, 2024, our long-term unsecured debt rating was AAA, and cash investments were in excess of $1.0 billion. As a result, no collateral was required to be posted. 
 
 60 
+
+
 
 The following table presents the notional amounts of our outstanding derivative instruments measured in U.S. dollar equivalents: 
 
@@ -1237,6 +1319,8 @@ The following table presents our derivative instruments:
 Gross derivative assets and liabilities subject to legally enforceable master netting agreements for which we have elected to offset were $304 million and $800 million, respectively, as of June 30, 2024, and $442 million and $804 million, respectively, as of June 30, 2023. 
 
 61 
+
+
 
 The following table presents the fair value of our derivatives instruments on a gross basis: 
 
@@ -1298,6 +1382,8 @@ The components of inventories were as follows:
 
 62 
 
+
+
 NOTE 7 — PROPERTY AND EQUIPMENT 
 
 The components of property and equipment were as follows: 
@@ -1334,6 +1420,8 @@ The major classes of assets and liabilities to which we have preliminarily alloc
 Goodwill was assigned to our More Personal Computing segment. The goodwill was primarily attributed to increased synergies that are expected to be achieved from the integration of Activision Blizzard. Substantially all of the goodwill is expected to be non-deductible for income tax purposes. 
 
 63 
+
+
 
 Following are the details of the purchase price allocated to the intangible assets acquired: 
 
@@ -1389,6 +1477,8 @@ The allocation of the purchase price to goodwill was completed as of December 31
 
 64 
 
+
+
 - (a) _Goodwill was assigned to our Intelligent Cloud segment and was primarily attributed to increased synergies that are expected to be achieved from the integration of Nuance. None of the goodwill is expected to be deductible for income tax purposes._ 
 
 - (b) _Includes $986 million of convertible senior notes issued by Nuance in 2015 and 2017, substantially all of which have been redeemed._ 
@@ -1434,6 +1524,8 @@ We test goodwill for impairment annually on May 1 at the reporting unit level, p
 No instances of impairment were identified in our May 1, 2024, May 1, 2023, or May 1, 2022 tests. As of June 30, 2024 and 2023, accumulated goodwill impairment was $11.3 billion. 
 
 65 
+
+
 
 ## NOTE 10 — INTANGIBLE ASSETS 
 
@@ -1483,6 +1575,8 @@ The following table outlines the estimated future amortization expense related t
 
 66 
 
+
+
 NOTE 11 — DEBT 
 
 ## **Short-term Debt** 
@@ -1511,6 +1605,8 @@ As of June 30, 2024 and 2023, the estimated fair value of long-term debt, includ
 Debt in the table above is comprised of senior unsecured obligations and ranks equally with our other outstanding obligations. Interest is paid semi-annually, except for the Euro-denominated debt, which is paid annually. Cash paid for interest on our debt for fiscal years 2024, 2023, and 2022 was $1.7 billion, $1.7 billion, and $1.9 billion, respectively. 
 
 67 
+
+
 
 The following table outlines maturities of our long-term debt, including the current portion, as of June 30, 2024: 
 
@@ -1557,6 +1653,8 @@ U.S. and foreign components of income before income taxes were as follows:
 
 68 
 
+
+
 ## **Effective Tax Rate** 
 
 The items accounting for the difference between income taxes computed at the U.S. federal statutory rate and our effective rate were as follows: 
@@ -1574,6 +1672,8 @@ The decrease from the federal statutory rate in fiscal year 2024 and 2023 is pri
 The decrease in our effective tax rate for fiscal year 2024 compared to fiscal year 2023 was primarily due to tax benefits from tax law changes, including the delay of the effective date of final foreign tax credit regulations. The increase in our effective tax rate for fiscal year 2023 compared to fiscal year 2022 was primarily due to a $3.3 billion net income tax benefit in the first quarter of fiscal year 2022 related to the transfer of intangible properties and a decrease in tax benefits relating to stock-based compensation. 
 
 69 
+
+
 
 The components of the deferred income tax assets and liabilities were as follows: 
 
@@ -1600,6 +1700,8 @@ Income taxes paid, net of refunds, were $23.4 billion, $23.1 billion, and $16.0 
 
 70 
 
+
+
 ## **Uncertain Tax Positions** 
 
 Gross unrecognized tax benefits related to uncertain tax positions as of June 30, 2024, 2023, and 2022, were $22.8 billion, $17.1 billion, and $15.6 billion, respectively, which were primarily included in long-term income taxes in our consolidated balance sheets. If recognized, the resulting tax benefit would affect our effective tax rates for fiscal years 2024, 2023, and 2022 by $19.6 billion, $14.4 billion, and $13.3 billion, respectively. 
@@ -1623,6 +1725,8 @@ We remain under audit by the IRS for tax years 2014 to 2017. With respect to the
 We are subject to income tax in many jurisdictions outside the U.S. Our operations in certain jurisdictions remain subject to examination for tax years 1996 to 2023, some of which are currently under audit by local tax authorities. The resolution of each of these audits is not expected to be material to our consolidated financial statements. 
 
 71 
+
+
 
 NOTE 13 — UNEARNED REVENUE 
 
@@ -1678,6 +1782,8 @@ Supplemental cash flow information related to leases was as follows:
 
 72 
 
+
+
 Supplemental balance sheet information related to leases was as follows: 
 
 ## **(In millions, except lease term and discount rate)** 
@@ -1709,6 +1815,8 @@ As of June 30, 2024, we had additional operating and finance leases, primarily f
 
 73 
 
+
+
 NOTE 15 — CONTINGENCIES 
 
 ## **U.S. Cell Phone Litigation** 
@@ -1728,6 +1836,8 @@ We also are subject to a variety of other claims and suits that arise from time 
 As of June 30, 2024, we accrued aggregate legal liabilities of $641 million. While we intend to defend these matters vigorously, adverse outcomes that we estimate could reach approximately $600 million in aggregate beyond recorded amounts are reasonably possible. Were unfavorable final outcomes to occur, there exists the possibility of a material adverse impact in our consolidated financial statements for the period in which the effects become reasonably estimable. 
 
 74 
+
+
 
 NOTE 16 — STOCKHOLDERS’ EQUITY 
 
@@ -1760,6 +1870,8 @@ We repurchased the following shares of common stock under the share repurchase p
 All repurchases were made using cash resources. Shares repurchased during the first quarter of fiscal year 2022 were under the share repurchase program approved on September 18, 2019. Shares repurchased during the second quarter of fiscal year 2022 were under the share repurchase programs approved on September 18, 2019 and September 14, 2021. All other shares repurchased were under the share repurchase program approved on September 14, 2021. The above table excludes shares repurchased to settle employee tax withholding related to the vesting of stock awards of $5.3 billion, $3.8 billion, and $4.7 billion for fiscal years 2024, 2023, and 2022, respectively. 
 
 75 
+
+
 
 ## **Dividends** 
 
@@ -1797,6 +1909,8 @@ The following table summarizes the changes in accumulated other comprehensive in
 
 
 76 
+
+
 
 NOTE 18 — EMPLOYEE STOCK AND SAVINGS PLANS 
 
@@ -1846,6 +1960,8 @@ As of June 30, 2024, total unrecognized compensation costs related to stock awar
 
 77 
 
+
+
 ## **Employee Stock Purchase Plan** 
 
 We have an ESPP for all eligible employees. Shares of our common stock may be purchased by employees at three-month intervals at 90% of the fair market value on the last trading day of each three-month period. Employees may purchase shares having a value not exceeding 15% of their gross compensation during an offering period. 
@@ -1886,6 +2002,8 @@ Our Productivity and Business Processes segment consists of products and service
 
 78 
 
+
+
 ## **Intelligent Cloud** 
 
 Our Intelligent Cloud segment consists of our public, private, and hybrid server products and cloud services that can power modern business and developers. This segment primarily comprises: 
@@ -1922,6 +2040,8 @@ Segment revenue and operating income were as follows during the periods presente
 
 
 79 
+
+
 
 No sales to an individual customer or country other than the United States accounted for more than 10% of revenue for fiscal years 2024, 2023, or 2022. Revenue, classified by the major geographic areas in which our customers were located, was as follows: 
 

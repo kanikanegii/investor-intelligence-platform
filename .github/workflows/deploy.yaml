@@ -3,7 +3,7 @@ name: Build and Deploy to AKS
 on:
   push:
     branches:
-      - cicd-setup
+      - main
 
 jobs:
   build-and-deploy:
@@ -21,12 +21,6 @@ jobs:
       - name: Login to ACR
         run: |
           az acr login --name ${{ secrets.ACR_NAME }}
-
-      - name: Docker Login to ACR
-        run: |
-          docker login ${{ secrets.ACR_LOGIN_SERVER }} \
-            -u ${{ secrets.ACR_USERNAME }} \
-            -p ${{ secrets.ACR_PASSWORD }}
 
       - name: Build Docker Image
         run: |
@@ -58,6 +52,9 @@ jobs:
             --from-literal=AZURE_SEARCH_INDEX_NAME="${{ secrets.AZURE_SEARCH_INDEX_NAME }}" \
             --from-literal=AZURE_OPENAI_EMBEDDING_DEPLOYMENT="${{ secrets.AZURE_OPENAI_EMBEDDING_DEPLOYMENT }}" \
             --from-literal=AZURE_OPENAI_CHAT_DEPLOYMENT="${{ secrets.AZURE_OPENAI_CHAT_DEPLOYMENT }}" \
+            --from-literal=AZURE_OPENAI_JUDGE_DEPLOYMENT="${{ secrets.AZURE_OPENAI_JUDGE_DEPLOYMENT }}" \
+            --from-literal=AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}" \
+            --from-literal=AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}" \
             --from-literal=POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" \
             --from-literal=POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" \
             --from-literal=POSTGRES_DATABASE="${{ secrets.POSTGRES_DATABASE }}" \
@@ -69,6 +66,8 @@ jobs:
         run: |
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/cluster-issuer.yaml
+          kubectl apply -f k8s/ingress.yaml
 
       - name: Restart Deployment
         run: |

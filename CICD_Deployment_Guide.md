@@ -5,7 +5,9 @@ This document explains every field used in the following files:
 ```text
 k8s/deployment.yaml
 k8s/service.yaml
-.github/workflows/deploy.yml
+k8s/ingress.yaml
+k8s/cluster-issuer.yaml
+.github/workflows/deploy.yaml
 ```
 
 The goal is to understand not only what each field does, but also why we are using it in our Investor Intelligence Platform project.
@@ -41,10 +43,14 @@ spec:
 
         image: invintelligence.azurecr.io/invint:latest
 
+        imagePullPolicy: Always
+
+        envFrom:
+        - secretRef:
+            name: invint-secrets
+
         ports:
         - containerPort: 8000
-
-        imagePullPolicy: Always
 ```
 
 ---
@@ -294,6 +300,37 @@ Without this, Kubernetes may reuse an older cached image.
 
 ---
 
+## envFrom
+
+```yaml
+envFrom:
+- secretRef:
+    name: invint-secrets
+```
+
+This bulk-imports **every key** inside the `invint-secrets` Kubernetes Secret
+as an environment variable in the container — one field, instead of listing
+each variable individually with `env:` + `valueFrom.secretKeyRef` per key.
+
+The `invint-secrets` Secret itself is created by the pipeline's own
+**Create Kubernetes Secrets** step (see below) — this file only references
+it by name, it doesn't create it. If that Secret doesn't exist yet, or was
+created under a different name, the pod will start with none of these
+environment variables set and crash on startup (the app reads several of
+them, like `AZURE_TENANT_ID`, via `os.environ[...]` rather than `.get()`,
+so a missing one is a hard crash, not a silent default).
+
+**Real incident this caught us on:** at one point the actual name in this
+Secret didn't match what was live in the cluster (`invint-env` existed
+instead of `invint-secrets`, created by hand during earlier firewall
+debugging rather than by this pipeline) — the app kept running on stale,
+manually-patched env vars instead of ever picking up what CI/CD intended.
+`envFrom`/`secretRef` only works correctly when the name here and the name
+the pipeline creates actually agree — see the **Troubleshooting** section
+at the bottom of this doc for the full story.
+
+---
+
 # service.yaml
 
 ## Complete File
@@ -309,7 +346,7 @@ spec:
   selector:
     app: invint
 
-  type: LoadBalancer
+  type: ClusterIP
 
   ports:
   - protocol: TCP
@@ -398,31 +435,35 @@ the Service can automatically discover them.
 ## type
 
 ```yaml
-type: LoadBalancer
+type: ClusterIP
 ```
 
-This is one of the most important settings.
+This used to be `type: LoadBalancer` (Azure would create its own public IP
++ Azure Load Balancer directly in front of this Service, same idea as
+below). That worked, but only for plain HTTP, on a raw IP, with no
+hostname-based routing and no TLS.
 
-Azure automatically creates:
+**Why it changed to `ClusterIP` — the tradeoff:**
 
-```text
-Public IP
-Azure Load Balancer
-```
+| | `type: LoadBalancer` (old) | `type: ClusterIP` + Ingress (current) |
+|---|---|---|
+| Public IPs needed | One per Service | One, total, shared by every Service routed through the Ingress controller |
+| TLS / HTTPS | Not handled — plaintext only | Centralized, automatic via `cert-manager` (see `k8s/cluster-issuer.yaml`) |
+| Hostname routing | None — one IP, one app | Route multiple domains/paths through the same IP |
+| Cost as more services are added | Scales linearly (new LB + IP each time) | Flat — new services are just new `Ingress` rules |
 
-when this type is used.
+`ClusterIP` makes this Service **internal-only** — reachable only from
+inside the cluster, not directly from the internet. The only way in from
+outside now is through `k8s/ingress.yaml`, routed via the `ingress-nginx`
+controller (which is what actually holds the public IP now).
 
-Without LoadBalancer:
-
-```text
-Application Remains Internal
-```
-
-With LoadBalancer:
-
-```text
-Internet Users Can Access Application
-```
+**Why this matters beyond cost:** if this were still `type: LoadBalancer`
+*alongside* the Ingress setup, the app would be reachable two ways at
+once — once through the Ingress (HTTPS, valid cert, hostname-checked), and
+once through the old raw LoadBalancer IP (plain HTTP, no cert, no checks).
+That second path would be a live, unencrypted bypass of everything the
+Ingress/TLS setup exists to enforce — bearer tokens sent through it would
+travel in plaintext. `ClusterIP` closes that path entirely.
 
 ---
 
@@ -488,7 +529,126 @@ FastAPI Application
 
 ---
 
-# deploy.yml
+# cluster-issuer.yaml
+
+## Complete File
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+
+metadata:
+  name: letsencrypt-prod
+
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: kanikanegi2910@gmail.com
+
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+
+    solvers:
+    - http01:
+        ingress:
+          ingressClassName: nginx
+```
+
+This tells **cert-manager** (a separate controller installed on the
+cluster, not something in this repo) how to actually obtain a real TLS
+certificate — specifically, from Let's Encrypt's production ACME server.
+
+`ClusterIssuer` is cluster-wide (as opposed to `Issuer`, which would be
+scoped to one namespace) — any `Ingress` in the cluster can reference this
+one issuer by name.
+
+**`solvers.http01`**: this is *how* cert-manager proves domain ownership to
+Let's Encrypt — it temporarily serves a challenge token at
+`http://<your-domain>/.well-known/acme-challenge/...` through the
+`ingress-nginx` ingress class, and Let's Encrypt fetches that token to
+confirm you actually control the domain before issuing a cert. This all
+happens automatically; nothing manual to do per certificate.
+
+**Rate limits, and why there's also a staging version:** Let's Encrypt's
+production server limits ~5 duplicate certificates per domain per week. A
+second file, `k8s/cluster-issuer-staging.yaml`, points at Let's Encrypt's
+**staging** ACME server instead — same mechanics, but certs it issues
+aren't trusted by browsers. It exists purely so Ingress/TLS config can be
+iterated on and tested without burning the production rate limit, and is
+deliberately **not** referenced by the live `Ingress` or applied by CI/CD —
+it's a manual tool, swap `k8s/ingress.yaml`'s `cert-manager.io/cluster-issuer`
+annotation to `letsencrypt-staging` temporarily if you need to test changes.
+
+---
+
+# ingress.yaml
+
+## Complete File
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: invint
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+spec:
+  ingressClassName: nginx
+
+  tls:
+  - hosts:
+    - investor-ai-platform.site
+    secretName: invint-tls
+
+  rules:
+  - host: investor-ai-platform.site
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: invint
+            port:
+              number: 80
+```
+
+This is the piece that actually makes `service.yaml`'s `type: ClusterIP`
+reachable from the internet at all.
+
+**`cert-manager.io/cluster-issuer: letsencrypt-prod`**: this annotation is
+what wires this specific `Ingress` to the `ClusterIssuer` above — cert-manager
+watches for `Ingress` objects with this annotation and automatically
+requests/renews a certificate for whatever hosts are listed under `tls`.
+
+**`ingressClassName: nginx`**: tells Kubernetes which installed Ingress
+Controller should handle this object. `ingress-nginx` is the controller
+installed on this cluster (a separate install, not part of this repo's
+manifests — see the Troubleshooting section for how it was set up); its
+own Service is `type: LoadBalancer` and holds the cluster's one public IP.
+Every app's `Ingress` — today just this one — routes through that single
+controller and IP.
+
+**`tls.hosts` / `tls.secretName`**: requests a certificate for
+`investor-ai-platform.site` and tells cert-manager to store the resulting
+cert+key in a Secret named `invint-tls` (created automatically — nothing to
+pre-create).
+
+**`rules.host`**: this Ingress only matches requests where the `Host:`
+header is `investor-ai-platform.site`. This is what host-based routing
+actually means in practice — a raw `LoadBalancer` Service has no concept of
+this at all, it just forwards every request on the port regardless of what
+hostname was requested.
+
+**`rules.http.paths`**: path `/` with `pathType: Prefix` matches everything
+— all traffic for this host goes to the `invint` Service on port `80`
+(which itself forwards to container port `8000`, per `service.yaml`).
+
+---
+
+# deploy.yaml
 
 ## Complete File
 
@@ -498,14 +658,11 @@ name: Build and Deploy to AKS
 on:
   push:
     branches:
-      - cicd-setup
+      - main
 
 jobs:
-
   build-and-deploy:
-
     runs-on: ubuntu-latest
-
     steps:
 
       - name: Checkout Repository
@@ -519,6 +676,12 @@ jobs:
       - name: Login to ACR
         run: |
           az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Docker Login to ACR
+        run: |
+          docker login ${{ secrets.ACR_LOGIN_SERVER }} \
+            -u ${{ secrets.ACR_USERNAME }} \
+            -p ${{ secrets.ACR_PASSWORD }}
 
       - name: Build Docker Image
         run: |
@@ -537,10 +700,35 @@ jobs:
             --name ${{ secrets.AKS_CLUSTER_NAME }} \
             --overwrite-existing
 
+      - name: Create Kubernetes Secrets
+        run: |
+          kubectl create secret generic invint-secrets \
+            --from-literal=AZURE_OPENAI_ENDPOINT="${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
+            --from-literal=AZURE_OPENAI_CHAT_ENDPOINT="${{ secrets.AZURE_OPENAI_CHAT_ENDPOINT }}" \
+            --from-literal=AZURE_OPENAI_API_KEY="${{ secrets.AZURE_OPENAI_API_KEY }}" \
+            --from-literal=AZURE_OPENAI_API_EMBEDDING_VERSION="${{ secrets.AZURE_OPENAI_API_EMBEDDING_VERSION }}" \
+            --from-literal=AZURE_OPENAI_API_VERSION="${{ secrets.AZURE_OPENAI_API_VERSION }}" \
+            --from-literal=AZURE_SEARCH_ENDPOINT="${{ secrets.AZURE_SEARCH_ENDPOINT }}" \
+            --from-literal=AZURE_SEARCH_API_KEY="${{ secrets.AZURE_SEARCH_API_KEY }}" \
+            --from-literal=AZURE_SEARCH_INDEX_NAME="${{ secrets.AZURE_SEARCH_INDEX_NAME }}" \
+            --from-literal=AZURE_OPENAI_EMBEDDING_DEPLOYMENT="${{ secrets.AZURE_OPENAI_EMBEDDING_DEPLOYMENT }}" \
+            --from-literal=AZURE_OPENAI_CHAT_DEPLOYMENT="${{ secrets.AZURE_OPENAI_CHAT_DEPLOYMENT }}" \
+            --from-literal=AZURE_OPENAI_JUDGE_DEPLOYMENT="${{ secrets.AZURE_OPENAI_JUDGE_DEPLOYMENT }}" \
+            --from-literal=AZURE_TENANT_ID="${{ secrets.AZURE_TENANT_ID }}" \
+            --from-literal=AZURE_CLIENT_ID="${{ secrets.AZURE_CLIENT_ID }}" \
+            --from-literal=POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" \
+            --from-literal=POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" \
+            --from-literal=POSTGRES_DATABASE="${{ secrets.POSTGRES_DATABASE }}" \
+            --from-literal=POSTGRES_USER="${{ secrets.POSTGRES_USER }}" \
+            --from-literal=POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Deploy Application
         run: |
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/cluster-issuer.yaml
+          kubectl apply -f k8s/ingress.yaml
 
       - name: Restart Deployment
         run: |
@@ -571,18 +759,27 @@ This helps identify the workflow in the Actions dashboard.
 on:
   push:
     branches:
-      - cicd-setup
+      - main
 ```
 
-This tells GitHub when to execute the pipeline.
+This tells GitHub when to execute the pipeline. Whenever code is pushed to
+this branch, the workflow automatically starts.
 
-Whenever code is pushed to:
+**This used to say `cicd-setup` instead of `main` — the tradeoff behind
+changing it:** `cicd-setup` (both the local and `origin` copies) turned out
+to be an old branch with unrelated, diverged history containing commits
+literally named `add secret` / `removed secret` — not something to keep
+pushing clean code onto, and not safely fast-forwardable either. Two
+options existed:
 
-```text
-cicd-setup
-```
-
-the workflow automatically starts.
+- **Force-push clean history over `cicd-setup`** — would have worked, but
+  force-push is a destructive operation, and doing it silently onto a
+  branch whose name suggested other tooling might still reference it felt
+  like the wrong default.
+- **Retarget the trigger to `main` instead (chosen)** — `main` was already
+  the branch receiving every clean push all along. Zero destructive git
+  operations needed, and the legacy `cicd-setup` branch never has to be
+  touched again.
 
 ---
 
@@ -651,6 +848,29 @@ Unauthorized Error
 
 ---
 
+## Docker Login to ACR
+
+```yaml
+docker login ${{ secrets.ACR_LOGIN_SERVER }} \
+  -u ${{ secrets.ACR_USERNAME }} \
+  -p ${{ secrets.ACR_PASSWORD }}
+```
+
+A second, separate login — this one authenticates the `docker` CLI
+specifically (as opposed to `az acr login` above, which authenticates the
+`az` CLI's own session). Uses ACR's **admin username/password** credentials
+rather than the Azure service principal from the `Azure Login` step.
+
+This is a known, deliberately temporary tradeoff, not the ideal end state —
+see `TODO_acr_rbac.md`: ACR currently has admin credentials enabled, when
+the more secure long-term approach is an `AcrPush`-scoped role assignment
+for this pipeline's service principal instead, with the admin account
+disabled. Not yet migrated — flagged as a separate, deliberately deferred
+task since changing it risks breaking image pushes if the role assignment
+isn't verified working before the admin account is disabled.
+
+---
+
 ## Build Docker Image
 
 ```yaml
@@ -704,25 +924,73 @@ kubectl Cannot Access AKS
 
 ---
 
+## Create Kubernetes Secrets
+
+```yaml
+kubectl create secret generic invint-secrets \
+  --from-literal=AZURE_OPENAI_ENDPOINT="${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
+  ...
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Builds the `invint-secrets` Kubernetes Secret that `deployment.yaml`'s
+`envFrom` bulk-imports — one `--from-literal=KEY="value"` per environment
+variable the app needs, sourced from GitHub Actions repository secrets.
+
+**`--dry-run=client -o yaml | kubectl apply -f -`**: this pattern (instead
+of just running `kubectl create secret ...` directly) is what makes this
+step **idempotent** — `kubectl create` alone would fail with "already
+exists" on every run after the first. Generating the YAML client-side with
+`--dry-run=client` and piping it into `kubectl apply` instead means the
+Secret gets created on the first run and **updated in place** on every run
+after, which is exactly the "safe to run every deploy" behavior CI/CD
+needs.
+
+**Why `--from-literal` here specifically matters, not just as a style
+choice:** `--from-literal=KEY="value"` takes the value as a shell
+argument — the double quotes are shell syntax for the argument boundary,
+they are never stored as part of the value itself. This is different from
+`--from-env-file=<file>`, which reads `KEY=value` lines directly and does
+**not** strip any quote characters written inside the file — if the source
+`.env`-style file has values like `KEY='https://...'` (quotes as literal
+file content, common in bash-style `.env` files), `--from-env-file` stores
+those quote characters as part of the secret's actual value. This exact
+distinction caused a real production outage — see **Troubleshooting**
+below.
+
+**Which secrets are required vs. safe to leave unset:** every
+`--from-literal` line here needs a matching GitHub Actions repository
+secret of the same name, with the value copied from the project's local
+`.env` (minus any surrounding quotes — see above). Two exceptions —
+`AZURE_OPENAI_API_EMBEDDING_VERSION` and `AZURE_OPENAI_API_VERSION` — are
+leftover from an earlier, date-versioned Azure OpenAI API pattern; current
+code (`llm/azure_openai.py`) uses the newer versionless endpoint and never
+reads either one, so they're safe to leave unset (they'll just resolve to
+empty strings that nothing consumes).
+
+---
+
 ## Deploy Application
 
 ```yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/cluster-issuer.yaml
+kubectl apply -f k8s/ingress.yaml
 ```
 
-Creates the resources if they don't exist.
+Creates each resource if it doesn't exist yet, updates it in place if it
+does — same idempotent `apply` pattern as the secrets step above. This is
+why manual imperative commands like `kubectl create deployment` /
+`kubectl expose deployment` are never needed here.
 
-Updates them if they already exist.
-
-This is why we do not need:
-
-```bash
-kubectl create deployment
-kubectl expose deployment
-```
-
-manually.
+The `cluster-issuer.yaml`/`ingress.yaml` lines were added after the
+Ingress/TLS setup was first done by hand (`kubectl apply` run manually, one
+time, from a local terminal) — folding them into the pipeline here means
+every future deploy keeps TLS/routing config in sync automatically, instead
+of that manual step being something a human has to remember to redo.
+Deliberately **not** included here: `k8s/cluster-issuer-staging.yaml` — see
+the `cluster-issuer.yaml` section above for why that one stays manual.
 
 ---
 
@@ -750,5 +1018,106 @@ This acts as a health check for the deployment process.
 
 If the deployment fails, the GitHub Action also fails.
 
+---
+
+# Troubleshooting: diagnosing a "works locally, broken in production" issue
+
+A real incident, kept here because the diagnostic *method* generalizes well
+beyond this one bug.
+
+**Symptom:** the production dashboard didn't show the sign-in UI it has
+locally, and the chat endpoint returned:
+```text
+No connection adapters were found for "'https://ai-search-investor-intelligence.search.windows.net'/indexes(...)"
 ```
+
+## The general pattern
+
+Whenever something works locally but not in the cluster, check things in
+this order — because "what Kubernetes *thinks* is configured" and "what the
+running process *actually* sees" can silently disagree, and that
+disagreement is usually the bug:
+
+**1. What does Kubernetes think is configured?**
+```bash
+kubectl get secret invint-secrets -o jsonpath='{.data.AZURE_SEARCH_ENDPOINT}' | base64 -d
 ```
+Pulls one field out of a Secret object. Kubernetes Secrets are stored
+**base64-encoded**, not encrypted — `| base64 -d` decodes it back to the
+real string. This returned `NotFound`, which was the first clue: the
+Secret this deployment expects didn't exist at all.
+
+**2. What actually exists, and how is it wired?**
+```bash
+kubectl get secrets
+kubectl get deployment invint -o jsonpath='{.spec.template.spec.containers[0].envFrom}'
+kubectl get deployment invint -o jsonpath='{range .spec.template.spec.containers[0].env[*]}{.name}={.valueFrom.secretKeyRef.name}/{.valueFrom.secretKeyRef.key}{"\n"}{end}'
+```
+`kubectl get secrets` lists every Secret in the namespace by name — this
+found `invint-env` instead of the expected `invint-secrets`. The
+`envFrom` check came back empty, and the `range` jsonpath loop (iterates
+over an array, printing something per entry) revealed the env vars were
+wired individually, by hand, pointing at `invint-env` — evidence of a
+manual `kubectl set env ...` patch that had drifted away from what this
+repo's `deployment.yaml` actually declares.
+
+**3. Decode the value and check its raw bytes, not just how it prints**
+```bash
+kubectl get secret invint-env -o jsonpath='{.data.AZURE_SEARCH_ENDPOINT}' | base64 -d | xxd | head -5
+```
+Piping through `xxd` (hex dump) instead of trusting the plain-text decode
+is what proved the value had **literal single-quote characters** (byte
+`0x27`) at both ends — `'https://...'` — not just something that looked
+quoted in terminal output.
+
+**4. Check what the *running pod* actually has, not just what's declared**
+```bash
+kubectl exec deployment/invint -- printenv | grep -i "AZURE_OPENAI\|AZURE_SEARCH"
+```
+`kubectl exec` runs a command **inside** the live container. This is the
+step that matters most — it's the difference between reading Kubernetes
+config and observing the real process. It's what revealed
+`AZURE_OPENAI_API_KEY` (the name the code actually reads) didn't exist at
+all — only a mistyped `AZURE_OPEN_AI_KEY` did.
+
+**5. Check which image is actually deployed**
+```bash
+kubectl get deployment invint -o jsonpath='{.spec.template.spec.containers[0].image}'
+kubectl get pod -o jsonpath='{.items[0].status.startTime}'
+```
+Returned `invintelligence.azurecr.io/invint:v1` — not `:latest` as this
+repo's `deployment.yaml` says. This is what proved the deployed code
+predated the whole session's worth of local changes: the CI/CD pipeline
+had never actually run successfully before, every prior deploy was manual.
+
+## Root cause and the fix
+
+Traced back to the local `.env` file's bash-style quoting
+(`AZURE_SEARCH_ENDPOINT='https://...'`) — `python-dotenv` correctly strips
+those quotes on load (why it always worked locally), but the `invint-env`
+Secret had been created via something like `--from-env-file=.env`, which
+splits on `=` and keeps everything after it **verbatim**, quote characters
+included.
+
+Two fixes were possible:
+
+- **Hand-patch `invint-env`'s values and manually rebuild/push a `:latest`
+  image.** Would have resolved the symptom, but left the CI/CD pipeline as
+  unproven as before, with the same drift able to silently recur next time
+  someone deploys by hand.
+- **Actually trigger the pipeline (chosen).** Rebuilds the image from
+  current code *and* recreates `invint-secrets` cleanly via
+  `--from-literal` (which, as covered in the Create Kubernetes Secrets
+  section above, doesn't have the quote-corruption problem
+  `--from-env-file` does) — fixing both root causes in the same action that
+  finally exercises the pipeline for real.
+
+Two more gaps were found while preparing to actually trigger it — a
+misspelled `AZURE_CRENDENTIALS` GitHub secret (workflow reads
+`secrets.AZURE_CREDENTIALS`; exact-name mismatches resolve to empty, so
+`Azure Login` had likely always failed silently whenever this pipeline
+tried to run) and two secrets missing outright
+(`AZURE_TENANT_ID`/`AZURE_CLIENT_ID`, added to the app this session for
+MSAL — both read via `os.environ[...]`, so a missing value crashes the app
+at startup, not just one request). Both are now fixed; see the Trigger and
+Create Kubernetes Secrets sections above for the details.

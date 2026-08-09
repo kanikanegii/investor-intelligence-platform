@@ -1,0 +1,24 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+
+# Let's Encrypt's staging environment: unlimited-ish issuance for iterating
+# on Ingress/TLS config without touching the production rate limit
+# (~5 duplicate certs/week per domain on letsencrypt-prod). Certs issued by
+# this issuer are NOT trusted by browsers (test CA) — use only to confirm
+# the challenge/cert flow works, then point the Ingress back at
+# letsencrypt-prod for a real trusted certificate.
+metadata:
+  name: letsencrypt-staging
+
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: kanikanegi2910@gmail.com
+
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+
+    solvers:
+    - http01:
+        ingress:
+          ingressClassName: nginx
