@@ -5,6 +5,12 @@ metadata:
   name: invint
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx's default is 1m -- too small for real filing PDFs (a Morgan
+    # Stanley 10-K was rejected with 413 at ~2MB, before ever reaching the
+    # app). Real annual reports with embedded charts/images can run well
+    # into the tens of MB, so set this generously rather than just past
+    # the one file that happened to trigger this.
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 
 spec:
   ingressClassName: nginx
