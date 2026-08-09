@@ -25,7 +25,6 @@ Live at: **https://investor-ai-platform.site**
 
 ### Storage
 * **Azure Blob Storage** — durable persistence for uploaded source PDFs (local disk is ephemeral in AKS)
-* **PDF processing** — `pymupdf4llm`
 
 ### Frontend
 * Server-rendered dashboard (Jinja2 + vanilla JS), real-time ingestion progress and chat
@@ -39,7 +38,7 @@ Live at: **https://investor-ai-platform.site**
 
 ## How It Works, End to End
 
-**1. Upload** — A signed-in user drags a PDF onto the dashboard. The browser uploads it to `/api/upload` (Entra-authenticated); the server writes it to local disk *and* Azure Blob Storage (the durable copy), then hands off to a background ingestion job and returns immediately.
+**1. Upload** — A signed-in user drags a PDF onto the dashboard, which uploads it to `/api/upload` (Entra-authenticated) and persists it to Azure Blob Storage, then hands off to a background ingestion job and returns immediately.
 
 **2. Ingestion pipeline** (real-time progress shown in the UI):
    1. **Convert** — PDF → Markdown (`pymupdf4llm`)
@@ -98,7 +97,7 @@ python main.py
 Push to `main` triggers `.github/workflows/deploy.yaml`, which builds and deploys the app to AKS end to end:
 
 1. **Azure login** (service principal via `AZURE_CREDENTIALS`)
-2. **ACR login** — currently via admin credentials, not RBAC (a `ClusterIssuer`-style RBAC migration was attempted and found blocked by an Azure-side ACR token-service issue unrelated to our config; admin creds are the working path)
+2. **ACR login** (admin credentials)
 3. **Build & push the image** — `docker buildx build --platform linux/arm64 ... --push`. This project's AKS node pool runs **arm64** (Azure Ampere nodes), while GitHub's runners are amd64 — QEMU + Buildx cross-build for the correct target architecture; a plain `docker build` here would silently produce an incompatible image
 4. **Get AKS credentials**, then create/update the `invint-secrets` Kubernetes Secret from GitHub Actions secrets
 5. **Apply manifests** — `k8s/deployment.yaml`, `k8s/service.yaml` (`ClusterIP` — `ingress-nginx` is the cluster's single public entry point, not a per-service LoadBalancer), `k8s/cluster-issuer.yaml` (Let's Encrypt via `cert-manager`), `k8s/ingress.yaml` (TLS + routing for the custom domain)
