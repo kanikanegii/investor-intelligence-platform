@@ -28,15 +28,18 @@ jobs:
             -u ${{ secrets.ACR_USERNAME }} \
             -p ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build Docker Image
-        run: |
-          docker build \
-            -t ${{ secrets.ACR_LOGIN_SERVER }}/invint:latest .
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-      - name: Push Docker Image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker Image
         run: |
-          docker push \
-            ${{ secrets.ACR_LOGIN_SERVER }}/invint:latest
+          docker buildx build \
+            --platform linux/arm64 \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/invint:latest \
+            --push .
 
       - name: Get AKS Credentials
         run: |
